@@ -6,7 +6,8 @@ import { CostPassRateParetoChart } from '@/components/charts/cost-pass-rate-pare
 import { DiscriminationSlopeChart } from '@/components/charts/discrimination-slope-chart';
 import { PassRateBarChart } from '@/components/charts/pass-rate-bar-chart';
 import { RoadmapDiagram } from '@/components/charts/roadmap-diagram';
-import { TaskReviewProcess } from '@/components/charts/task-review-process';
+import { ScienceFeedbackLoop } from '@/components/charts/science-feedback-loop';
+import { TaskDomainCoverage } from '@/components/charts/task-domain-coverage';
 import { TokensVsStepsChart } from '@/components/charts/tokens-vs-steps-chart';
 import { ContributorGeographyMap } from '@/components/contributor-geography-map';
 import { MdxPre } from '@/components/mdx-codeblock';
@@ -21,8 +22,9 @@ export function getMDXComponents(components?: MDXComponents) {
     DiscriminationSlopeChart,
     CostPassRateParetoChart,
     TokensVsStepsChart,
-    TaskReviewProcess,
     RoadmapDiagram,
+    ScienceFeedbackLoop,
+    TaskDomainCoverage,
     ContributorGeographyMap,
     ...components,
   } satisfies MDXComponents;

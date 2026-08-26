@@ -15,35 +15,25 @@ While Terminal-Bench has helped drive progress in AI agents for software enginee
 
 Achieving this requires benchmarks that reflect real scientific practice, provide verifiable evidence of capability, and evolve alongside the AI frontier.
 
-**We need benchmarks drawn from real scientific workflows.** Scientific capability should be evaluated on work drawn from research practice, not textbook questions or standardized exercises. Those workflows should come from practicing scientists themselves. Terminal-Bench-Science gives researchers a direct voice in setting the bar for AI progress on the problems they care about and provides a shared platform for the scientific community to define that bar together. Science is too important for its benchmarks to be defined primarily by model providers or data vendors; the research community should determine what constitutes scientific capability.
+**We need benchmarks drawn from real scientific workflows.** Scientific capability should be evaluated on work drawn from research practice, not textbook questions or standardized exercises. Those workflows should come from practicing scientists themselves. Terminal-Bench-Science gives researchers a direct voice in setting the bar for AI progress on the problems they care about and provides a shared platform for the scientific community to define that bar together. Science is too important for its benchmarks to be defined primarily by model providers or data vendors. The research community should determine what scientific capability looks like.
 
-**We need verifiable evidence of scientific capability.** Without reliable evaluation, we cannot tell whether agent capabilities are improving or where their limitations remain. Terminal-Bench-Science evaluates agents in realistic environments and grades concrete outputs with reproducible, task-specific tests.
+**We need verifiable evidence of scientific capability.** Without reliable evaluation, we cannot tell whether agent capabilities are improving or where their limitations remain. Terminal-Bench-Science evaluates agents in realistic environments and grades concrete artifacts such as analyses, simulations, proofs, code, and data products with reproducible, task-specific tests.
 
-**We need a benchmark that keeps pace with the frontier.** Terminal-Bench-Science is designed to remain challenging as agents improve. Continuous releases allow us to add new workflows, improve existing tasks, and evolve the benchmark alongside scientific needs and AI development.
+**We need a benchmark that keeps pace with the frontier.** Too often, scientific benchmarks are built for publications and citations rather than maintained as mechanisms for driving progress. They are released once and then abandoned as models advance and known limitations persist. Terminal-Bench-Science is a continuous benchmark that evolves alongside the AI frontier. Through regular releases, scientists can contribute new workflows, improve existing tasks, and create a feedback loop between scientific needs and AI development.
+
+<ScienceFeedbackLoop />
 
 ## Tasks
 
-Terminal-Bench 3.0 was built using our learnings from building earlier Terminal-Bench versions. Each task goes through a rigorous review process with dense human and agent feedback at each step. Frontier agent, oracle agent, and cheating agent runs ensure that the task is well defined. Domain experts review tasks to probe instruction/verifier alignment, task realism, and manage under/over specification risks.
+Terminal-Bench-Science 0.1 includes 70 tasks across the life, physical, earth, mathematical, and engineering sciences. Tasks span scientific data analysis, statistical inference, simulation, optimization, theorem proving, image reconstruction, signal processing, inverse problems, sensor calibration, model fitting, classification, and scientific machine learning.
 
-<TaskReviewProcess />
+<TaskDomainCoverage />
 
-Terminal-Bench 3.0 is an open internet benchmark. Capabilities are best demonstrated when agents have access to their full set of tools. We instruct agents not to look for task-specific solutions or hints online, which is surprisingly effective. We also tell the agent how long it has to complete the task.
+Tasks are contributed by researchers through an open process, with discussion and feedback in the `#tb-science` channel of our [Discord community](https://discord.com/invite/2Pe5uWGcV3). Tasks must meet three core criteria: they must be scientifically grounded, objectively verifiable, and genuinely challenging. Each task begins as a proposal and is implemented through a pull request. Domain reviewers assess scientific validity and realism, technical reviewers inspect task construction and verification, and a bar raiser performs the final quality review before merge.
 
-We separate the agent container and verifier container. Artifacts from the agent container are downloaded at the end of the trial, logged, and uploaded to the verifier container. This prevents many reward hacking vectors allowing for re-grading when task verifiers are updated. The diversity of artifact filetypes reflects the expansion into new domains:
+Across 920 proposals and 385 implementation pull requests, only 70 tasks made it into Terminal-Bench-Science 0.1. This selectivity reflects how difficult it is to create tasks that are scientifically interesting, challenging for frontier agents, and sufficiently well specified for rigorous evaluation, a process that requires substantial domain expertise. Progress across proposals, pull requests, and reviews is tracked on the [public task dashboard](https://stevendillmann.github.io/tb-science-task-dashboard/).
 
-- Database snapshots (`.sql`, `pg.dump`, `redis.rdb`, Kafka `.tgz`)
-- ML checkpoints (`.pt`, `.safetensors`)
-- RTL designs (`.v`)
-- Formal proofs (Lean `.lean`, Coq `.v`)
-- Source code and patches (Python, C, CUDA, TypeScript, etc.)
-- VM images (`.qcow2`, `.fd`)
-- Compiled binaries (`.jar`, ELF executables)
-- Music scores (`.mxl`, `.musicxml`)
-- CAD files (`.step`, `.FCStd`)
-- Scientific analyses (`.json`, `.csv`, `.tsv`)
-- Quantitative computations (`.json`, `.csv`, `.xlsx`)
-- Reverse-engineered specs (`.json`)
-- Business-process decisions (`.json`, `.jsonl`)
+<ContributorGeographyMap />
 
 ## Results
 
@@ -82,7 +72,5 @@ We appreciate our sponsors who made this project possible including [Modal](http
 From the creators of [Harbor](https://www.harborframework.com/) and [Terminal-Bench](https://www.tbench.ai/).
 
 **Written by:** Ryan Marten, Alex Shaw, Andy Konwinski
-
-<ContributorGeographyMap />
 
 [^1]: Grok 4.5 was removed from this chart due to a cost reporting issue with the Cursor CLI harness.

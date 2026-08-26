@@ -481,6 +481,11 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://scholar.google.com/citations?user=cEM1a5gAAAAJ',
       },
       {
+        name: 'Peter Clark',
+        affiliation: 'Allen Institute for AI',
+        href: 'https://scholar.google.com/citations?user=o-5vyEsAAAAJ',
+      },
+      {
         name: 'Thomas Wolf',
         affiliation: 'Hugging Face',
         href: 'https://scholar.google.com/citations?user=D2H5EFEAAAAJ',

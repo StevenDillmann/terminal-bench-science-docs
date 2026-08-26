@@ -1,25 +1,34 @@
-import { DISCRIMINATION_SLOPE_DATA } from '@/lib/discrimination-slope-data';
+import {
+  MODEL_STROKE_PATTERNS,
+  labFromModelName,
+  modelLabColor,
+} from '@/components/charts/model-colors';
+import {
+  DISCRIMINATION_SLOPE_DATA,
+  type DiscriminationSlopePoint,
+} from '@/lib/discrimination-slope-data';
 
 const WIDTH = 720;
-const HEIGHT = 420;
-const MARGIN = { top: 56, right: 200, bottom: 28, left: 200 };
+const HEIGHT = 400;
+const MARGIN = { top: 44, right: 165, bottom: 24, left: 190 };
 const LEFT_X = MARGIN.left;
 const RIGHT_X = WIDTH - MARGIN.right;
+const MID_X = (LEFT_X + RIGHT_X) / 2;
+const PLOT_TOP = MARGIN.top;
+const PLOT_BOTTOM = HEIGHT - MARGIN.bottom;
 const DOT_R = 4.5;
-const MIN_LABEL_GAP = 16;
+const NAME_FONT_SIZE = 12;
+const VALUE_FONT_SIZE = 11;
+const MIN_NAME_GAP = 16;
+const MIN_VALUE_GAP = 14;
+const HEADER_Y = 30;
+const TERMINAL_BENCH_URL = 'https://www.tbench.ai/';
 
 function formatPct(value: number): string {
   return `${value.toLocaleString('en-US', {
     maximumFractionDigits: 1,
     minimumFractionDigits: 1,
   })}%`;
-}
-
-function yScale(accuracy: number, yMin: number, yMax: number): number {
-  const plotTop = MARGIN.top;
-  const plotBottom = HEIGHT - MARGIN.bottom;
-  const t = (accuracy - yMin) / (yMax - yMin || 1);
-  return plotBottom - t * (plotBottom - plotTop);
 }
 
 /** Nudge label Y positions so nearby scores don't overlap. */
@@ -62,12 +71,63 @@ function spreadLabels(
   return result;
 }
 
+type ColumnId = 'terminal' | 'tb3' | 'science';
+
+type Column = {
+  id: ColumnId;
+  x: number;
+  header: string;
+  value: (row: DiscriminationSlopePoint) => number | null;
+};
+
+const COLUMNS: readonly Column[] = [
+  {
+    id: 'terminal',
+    x: LEFT_X,
+    header: 'Terminal-Bench 2.1',
+    value: (row) => row.terminalAccuracy,
+  },
+  {
+    id: 'tb3',
+    x: MID_X,
+    header: 'Terminal-Bench 3.0',
+    value: (row) => row.tb3Accuracy,
+  },
+  {
+    id: 'science',
+    x: RIGHT_X,
+    header: 'Terminal-Bench-Science 0.1',
+    value: (row) => row.scienceAccuracy,
+  },
+];
+
+type StyledRow = DiscriminationSlopePoint & {
+  color: string;
+  strokeDasharray: string | undefined;
+};
+
+/** Same scheme as the domain radar: color by lab, dash pattern by model within lab. */
+function styleRows(rows: readonly DiscriminationSlopePoint[]): StyledRow[] {
+  const labModelCounts = new Map<string, number>();
+  return rows.map((row) => {
+    const lab = labFromModelName(row.model);
+    const modelIndex = labModelCounts.get(lab) ?? 0;
+    labModelCounts.set(lab, modelIndex + 1);
+    return {
+      ...row,
+      color: modelLabColor(lab),
+      strokeDasharray:
+        MODEL_STROKE_PATTERNS[modelIndex % MODEL_STROKE_PATTERNS.length],
+    };
+  });
+}
+
 export function DiscriminationSlopeChart() {
-  const data = DISCRIMINATION_SLOPE_DATA;
+  const data = styleRows(DISCRIMINATION_SLOPE_DATA);
   const accuracies = data.flatMap((row) =>
-    row.terminalAccuracy == null
-      ? [row.tb3Accuracy]
-      : [row.terminalAccuracy, row.tb3Accuracy],
+    COLUMNS.map((column) => column.value(row)).filter(
+      (value): value is number => value != null,
+    ),
   );
   const rawMin = Math.min(...accuracies);
   const rawMax = Math.max(...accuracies);
@@ -75,28 +135,25 @@ export function DiscriminationSlopeChart() {
   const yMin = Math.max(0, rawMin - pad);
   const yMax = Math.min(100, rawMax + pad);
 
-  const leftLabels = data
-    .filter((row) => row.terminalAccuracy != null)
-    .map((row) => ({
-      id: `left-${row.agent}-${row.model}`,
-      y: yScale(row.terminalAccuracy!, yMin, yMax),
-    }));
-  const rightLabels = data.map((row) => ({
-    id: `right-${row.agent}-${row.model}`,
-    y: yScale(row.tb3Accuracy, yMin, yMax),
-  }));
+  const yScale = (accuracy: number) => {
+    const t = (accuracy - yMin) / (yMax - yMin || 1);
+    return PLOT_BOTTOM - t * (PLOT_BOTTOM - PLOT_TOP);
+  };
 
-  const leftY = spreadLabels(
-    leftLabels,
-    MIN_LABEL_GAP,
-    MARGIN.top,
-    HEIGHT - MARGIN.bottom,
-  );
-  const rightY = spreadLabels(
-    rightLabels,
-    MIN_LABEL_GAP,
-    MARGIN.top,
-    HEIGHT - MARGIN.bottom,
+  // Outer axes carry "Model — value" labels; the middle axis carries values only.
+  const labelY = new Map(
+    COLUMNS.map((column) => [
+      column.id,
+      spreadLabels(
+        data.flatMap((row) => {
+          const value = column.value(row);
+          return value == null ? [] : [{ id: row.model, y: yScale(value) }];
+        }),
+        column.id === 'tb3' ? MIN_VALUE_GAP : MIN_NAME_GAP,
+        PLOT_TOP,
+        PLOT_BOTTOM,
+      ),
+    ]),
   );
 
   return (
@@ -105,119 +162,99 @@ export function DiscriminationSlopeChart() {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"
         role="img"
-        aria-label="Pass rate by model on Terminal-Bench 2.1 vs Terminal-Bench 3.0"
+        aria-label="Pass rate by model on Terminal-Bench 2.1, Terminal-Bench 3.0, and Terminal-Bench-Science 0.1"
         className="mx-auto block max-w-full"
       >
-        <text
-          x={WIDTH / 2}
-          y={22}
-          textAnchor="middle"
-          className="fill-muted-foreground font-mono"
-          fontSize={11}
-        >
-          Pass Rate by Model
-        </text>
+        {COLUMNS.map((column) => (
+          <g key={column.id}>
+            <text
+              x={column.x}
+              y={HEADER_Y}
+              textAnchor="middle"
+              className="fill-foreground font-mono"
+              fontSize={12}
+            >
+              {column.header}
+            </text>
+            <line
+              x1={column.x}
+              y1={PLOT_TOP}
+              x2={column.x}
+              y2={PLOT_BOTTOM}
+              className="stroke-border"
+              strokeWidth={1.25}
+            />
+          </g>
+        ))}
 
-        <text
-          x={LEFT_X}
-          y={44}
-          textAnchor="middle"
-          className="fill-foreground font-mono"
-          fontSize={13}
-        >
-          Terminal-Bench 2.1
-        </text>
-        <text
-          x={RIGHT_X}
-          y={44}
-          textAnchor="middle"
-          className="fill-foreground font-mono"
-          fontSize={13}
-        >
-          Terminal-Bench 3.0
-        </text>
-
-        <line
-          x1={LEFT_X}
-          y1={MARGIN.top}
-          x2={LEFT_X}
-          y2={HEIGHT - MARGIN.bottom}
-          className="stroke-border"
-          strokeWidth={1.25}
-        />
-        <line
-          x1={RIGHT_X}
-          y1={MARGIN.top}
-          x2={RIGHT_X}
-          y2={HEIGHT - MARGIN.bottom}
-          className="stroke-border"
-          strokeWidth={1.25}
-        />
-
+        {/* Lines first so every dot and label paints above them. */}
         {data.map((row) => {
-          const leftId = `left-${row.agent}-${row.model}`;
-          const rightId = `right-${row.agent}-${row.model}`;
-          const fy = yScale(row.tb3Accuracy, yMin, yMax);
-          const ty =
-            row.terminalAccuracy == null
-              ? null
-              : yScale(row.terminalAccuracy, yMin, yMax);
-          const labelLeftY = leftY.get(leftId) ?? ty ?? fy;
-          const labelRightY = rightY.get(rightId) ?? fy;
-
+          const points = COLUMNS.flatMap((column) => {
+            const value = column.value(row);
+            return value == null ? [] : [{ x: column.x, y: yScale(value) }];
+          });
+          if (points.length < 2) return null;
           return (
-            <g key={`${row.agent}-${row.model}`}>
-              {ty != null ? (
-                <>
-                  <line
-                    x1={LEFT_X}
-                    y1={ty}
-                    x2={RIGHT_X}
-                    y2={fy}
-                    className="stroke-muted-foreground/45"
-                    strokeWidth={1.25}
-                  />
-                  <circle
-                    cx={LEFT_X}
-                    cy={ty}
-                    r={DOT_R}
-                    className="fill-foreground"
-                  />
-                  <text
-                    x={LEFT_X - 12}
-                    y={labelLeftY}
-                    textAnchor="end"
-                    dominantBaseline="central"
-                    className="fill-foreground font-mono"
-                    fontSize={12}
-                  >
-                    {`${row.model} — ${formatPct(row.terminalAccuracy!)}`}
-                  </text>
-                </>
-              ) : null}
-
-              <circle
-                cx={RIGHT_X}
-                cy={fy}
-                r={DOT_R}
-                className="fill-foreground"
-              />
-              <text
-                x={RIGHT_X + 12}
-                y={labelRightY}
-                textAnchor="start"
-                dominantBaseline="central"
-                className="fill-foreground font-mono"
-                fontSize={12}
-              >
-                {`${row.model} — ${formatPct(row.tb3Accuracy)}`}
-              </text>
-            </g>
+            <polyline
+              key={`line-${row.model}`}
+              points={points.map((p) => `${p.x},${p.y}`).join(' ')}
+              fill="none"
+              stroke={row.color}
+              strokeWidth={1.75}
+              strokeDasharray={row.strokeDasharray}
+              strokeLinejoin="round"
+            />
           );
         })}
+
+        {data.map((row) =>
+          COLUMNS.map((column) => {
+            const value = column.value(row);
+            if (value == null) return null;
+            const y = yScale(value);
+            const textY = labelY.get(column.id)?.get(row.model) ?? y;
+            const isLeft = column.id === 'terminal';
+            const showName = column.id !== 'tb3';
+            return (
+              <g key={`${column.id}-${row.model}`}>
+                <circle
+                  cx={column.x}
+                  cy={y}
+                  r={DOT_R}
+                  fill={row.color}
+                  className="stroke-background"
+                  strokeWidth={1.5}
+                />
+                <text
+                  x={isLeft ? column.x - 11 : column.x + 11}
+                  y={textY}
+                  textAnchor={isLeft ? 'end' : 'start'}
+                  dominantBaseline="central"
+                  paintOrder="stroke"
+                  strokeWidth={3}
+                  strokeLinejoin="round"
+                  className="fill-foreground stroke-background font-mono"
+                  fontSize={showName ? NAME_FONT_SIZE : VALUE_FONT_SIZE}
+                >
+                  {showName
+                    ? `${row.model} — ${formatPct(value)}`
+                    : formatPct(value)}
+                </text>
+              </g>
+            );
+          }),
+        )}
       </svg>
       <figcaption className="mt-2 text-center text-sm text-muted-foreground">
-        Discrimination vs Terminal-Bench 2.1
+        <a
+          href={TERMINAL_BENCH_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Pass Rates on Terminal-Bench 2.1, Terminal-Bench 3.0, and
+          Terminal-Bench-Science 0.1
+        </a>
       </figcaption>
     </figure>
   );

@@ -29,7 +29,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: appName,
     description: siteDescription,
-    images: '/terminal-bench-og-1200x630.png',
+    images: [
+      {
+        url: '/terminal-bench-science-og-1200x630.png',
+        width: 1200,
+        height: 630,
+        alt: 'Terminal-Bench-Science',
+      },
+    ],
     url: siteUrl,
     siteName: appName,
     locale: 'en_US',
@@ -41,9 +48,10 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: '/terminal-bench-twitter-1200x630.png',
+        url: '/terminal-bench-science-twitter-1200x630.png',
         width: 1200,
         height: 630,
+        alt: 'Terminal-Bench-Science',
       },
     ],
   },

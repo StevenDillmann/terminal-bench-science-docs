@@ -13,6 +13,10 @@ import {
   type ChartRowLabel,
 } from '@/components/charts/chart-labels';
 import {
+  MODEL_STROKE_PATTERNS,
+  modelLabColor,
+} from '@/components/charts/model-colors';
+import {
   ALL_DOMAIN_RADAR_AXES,
   type DomainRadarAxis,
   type DomainId,
@@ -41,25 +45,9 @@ export type DomainRadarDatum = {
   strokeDasharray?: string;
 };
 
-const RADAR_COLORS = [
-  '#038f99',
-  '#6d5bd0',
-  '#c45825',
-  '#2e7d4f',
-  '#b04a78',
-  '#3c75b5',
-  '#8a6b16',
-  '#8b4f9e',
-] as const;
 const SIZE = 520;
 const CENTER = SIZE / 2;
 const RADIUS = 220;
-const MODEL_STROKE_PATTERNS = [
-  undefined,
-  '10 5',
-  '2 4',
-  '12 4 2 4',
-] as const;
 
 function buildRadarScale(data: DomainRadarDatum[], axes: readonly DomainRadarAxis[]) {
   const highestScore = Math.max(
@@ -81,15 +69,6 @@ function buildRadarScale(data: DomainRadarDatum[], axes: readonly DomainRadarAxi
   return { maximum, steps };
 }
 
-function hashString(value: string): number {
-  let hash = 2_166_136_261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16_777_619);
-  }
-  return hash >>> 0;
-}
-
 function modelLab(row: LeaderboardRow): string {
   const model = parseLeaderboardLink(
     getAccessorValue(row, 'metadata.model_display'),
@@ -105,16 +84,6 @@ function modelLab(row: LeaderboardRow): string {
   return lab;
 }
 
-function modelLabColor(lab: string): string {
-  if (lab.includes('anthropic.com')) return '#9e997b';
-  if (lab.includes('openai.com')) {
-    return 'color-mix(in oklch, var(--foreground) 88%, var(--background))';
-  }
-  if (lab === 'x.ai' || lab.endsWith('.x.ai')) return '#895e4d';
-  if (lab.includes('moonshot.ai')) return '#9e4589';
-  if (lab === 'z.ai' || lab.endsWith('.z.ai')) return '#909a16';
-  return RADAR_COLORS[hashString(lab) % RADAR_COLORS.length]!;
-}
 
 function radarScore(
   row: LeaderboardRow,

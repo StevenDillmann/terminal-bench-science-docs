@@ -105,9 +105,7 @@ export function PassRateBarChart() {
                   y={barY}
                   width={Math.max(barWidth, 1)}
                   height={BAR_HEIGHT}
-                  className={
-                    index === 0 ? 'fill-[#038f99]' : 'fill-[#038f99]/75'
-                  }
+                  className="fill-[#038f99]/75"
                 />
                 <text
                   x={MARGIN.left + LABEL_WIDTH + plotWidth + 8}
