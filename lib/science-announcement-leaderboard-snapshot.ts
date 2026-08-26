@@ -14,7 +14,7 @@ export type ScienceAnnouncementLeaderboardEntry = {
 };
 
 export const SCIENCE_ANNOUNCEMENT_LEADERBOARD_UPDATED_AT =
-  '2026-08-26T11:42:17.463749+00:00';
+  '2026-08-26T17:24:06.600744+00:00';
 
 export const SCIENCE_ANNOUNCEMENT_LEADERBOARD_SNAPSHOT: readonly ScienceAnnouncementLeaderboardEntry[] =
   [
@@ -58,7 +58,7 @@ export const SCIENCE_ANNOUNCEMENT_LEADERBOARD_SNAPSHOT: readonly ScienceAnnounce
       status: 'display',
       model: 'GLM 5.3',
       agent: 'Claude Code',
-      accuracy: 8.571428571428571,
+      accuracy: 8.095238095238095,
     },
     {
       rank: 7,

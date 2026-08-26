@@ -17,7 +17,7 @@ export type AnnouncementDomainRadarDatum = {
 };
 
 /**
- * Domain resolution rates for the announcement radar (Opus 5 vs Sol).
+ * Domain resolution rates for the announcement radar (Claude Opus 5 vs GPT-5.6 Sol).
  *
  * Exported from Harbor Hub on August 26, 2026.
  */

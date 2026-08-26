@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import type { AnnouncementDomainRadarDatum } from '@/lib/science-announcement-domain-radar-snapshot';
 import { ALL_DOMAIN_RADAR_AXES } from '@/lib/domain-radar-axes';
 import { SCIENCE_ANNOUNCEMENT_DOMAIN_RADAR_SNAPSHOT } from '@/lib/science-announcement-domain-radar-snapshot';
@@ -99,7 +101,7 @@ export function DomainRadarAnnouncement() {
           aria-label="Domain resolution rates for Opus 5 and GPT-5.6 Sol"
           className="mx-auto block text-foreground"
         >
-          <title>Domain resolution rates: Opus 5 vs Sol</title>
+          <title>Domain resolution rates: Claude Opus 5 vs GPT-5.6 Sol</title>
 
           {scale.steps.map((step) => (
             <polygon
@@ -220,12 +222,12 @@ export function DomainRadarAnnouncement() {
       </div>
 
       <figcaption className="mt-2 text-center text-sm text-muted-foreground">
-        <a
+        <Link
           href="/?view=domains"
           className="underline-offset-4 hover:text-foreground hover:underline"
         >
-          Terminal-Bench-Science 0.1 Domain Resolution Rates: Opus 5 vs Sol
-        </a>
+          Terminal-Bench-Science 0.1 Domain Resolution Rates: Claude Opus 5 vs GPT-5.6 Sol
+        </Link>
       </figcaption>
     </figure>
   );

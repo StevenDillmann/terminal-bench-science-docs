@@ -28,6 +28,10 @@ export type ParetoDatum = {
   y: number;
   accuracyStderr: number | null;
   onFrontier: boolean;
+  /** Force the label to one side of the marker (defaults to position-based). */
+  labelSide?: 'left' | 'right';
+  /** Vertical nudge for the label in px (positive moves it down). */
+  labelOffsetY?: number;
 };
 
 const MIN_WIDTH = 480;
@@ -398,7 +402,9 @@ export function ParetoScatterChart({
           const size = half * 2;
           const modelText = datum.label.model;
           const agentText = datum.label.agent;
-          const labelOnLeft = cx > MARGIN.left + plotW * 0.75;
+          const labelOnLeft = datum.labelSide
+            ? datum.labelSide === 'left'
+            : cx > MARGIN.left + plotW * 0.75;
           const labelX = labelOnLeft ? cx - half - 6 : cx + half + 6;
           return (
             <g key={datum.id}>
@@ -456,7 +462,7 @@ export function ParetoScatterChart({
               {datum.onFrontier || showNonFrontierLabels ? (
                 <text
                   x={labelX}
-                  y={agentText ? cy - 2 : cy + 4}
+                  y={(agentText ? cy - 2 : cy + 4) + (datum.labelOffsetY ?? 0)}
                   textAnchor={labelOnLeft ? 'end' : 'start'}
                   dominantBaseline="auto"
                   className={

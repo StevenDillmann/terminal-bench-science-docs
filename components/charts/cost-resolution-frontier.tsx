@@ -3,10 +3,17 @@ import {
   type ParetoDatum,
 } from '@/components/charts/pareto-scatter-chart';
 
-type FrontierPoint = Omit<ParetoDatum, 'onFrontier' | 'x'> & {
+type FrontierPoint = Omit<
+  ParetoDatum,
+  'onFrontier' | 'x' | 'labelSide' | 'labelOffsetY'
+> & {
   cost: number;
   tokens: number;
   charts?: ('cost' | 'tokens')[];
+  /** Per-chart label side, to dodge neighbouring labels. */
+  labelSide?: Partial<Record<'cost' | 'tokens', 'left' | 'right'>>;
+  /** Per-chart vertical label nudge in px (positive moves it down). */
+  labelOffsetY?: Partial<Record<'cost' | 'tokens', number>>;
 };
 
 const BASE_DATA: FrontierPoint[] = [
@@ -37,6 +44,8 @@ const BASE_DATA: FrontierPoint[] = [
     releaseDate: null,
     y: 8.5714285714,
     accuracyStderr: null,
+    labelSide: { tokens: 'left' },
+    labelOffsetY: { tokens: 8 },
   },
   {
     id: 'grok-4.6-grok-build',
@@ -51,7 +60,7 @@ const BASE_DATA: FrontierPoint[] = [
     releaseDate: null,
     y: 7.1428571429,
     accuracyStderr: null,
-    charts: ['cost'],
+    labelOffsetY: { tokens: 14 },
   },
   {
     id: 'gpt-5.6-sol-codex',
@@ -80,6 +89,8 @@ const BASE_DATA: FrontierPoint[] = [
     releaseDate: null,
     y: 10.4761904762,
     accuracyStderr: null,
+    labelSide: { tokens: 'left' },
+    labelOffsetY: { tokens: -6 },
   },
   {
     id: 'opus-5-claude-code',
@@ -123,6 +134,7 @@ const BASE_DATA: FrontierPoint[] = [
     y: 7.1428571429,
     accuracyStderr: null,
     charts: ['tokens'],
+    labelOffsetY: { tokens: -16 },
   },
   {
     id: 'glm-5.3-claude-code',
@@ -132,12 +144,11 @@ const BASE_DATA: FrontierPoint[] = [
       full: 'GLM 5.3 (Claude Code)',
     },
     reasoningEffort: null,
-    cost: 4838.509017,
-    tokens: 5_963_206_087,
+    cost: 6802.566162,
+    tokens: 8_486_097_200,
     releaseDate: null,
-    y: 8.5714285714,
+    y: 8.0952380952,
     accuracyStderr: null,
-    charts: ['tokens'],
   },
 ];
 
@@ -149,10 +160,12 @@ function frontierData(
   return BASE_DATA.filter(
     (point) => !point.charts || point.charts.includes(xAxis),
   )
-    .map(({ charts: _charts, ...point }) => ({
+    .map(({ charts: _charts, labelSide, labelOffsetY, ...point }) => ({
       ...point,
       x: point[xAxis],
       onFrontier: frontier.has(point.id),
+      labelSide: labelSide?.[xAxis],
+      labelOffsetY: labelOffsetY?.[xAxis],
     }))
     .sort((a, b) => a.x - b.x);
 }
@@ -166,7 +179,6 @@ const COST_DATA = frontierData('cost', [
 
 const TOKEN_DATA = frontierData('tokens', [
   'kimi-k3-claude-code',
-  'glm-5.3-claude-code',
   'fable-5-claude-code',
   'opus-5-claude-code',
 ]);

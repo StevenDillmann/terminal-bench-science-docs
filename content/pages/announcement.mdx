@@ -19,7 +19,7 @@ Achieving this requires benchmarks that reflect real scientific practice, provid
 
 **We need verifiable evidence of scientific capability.** Without reliable evaluation, we cannot tell whether agent capabilities are improving or where their limitations remain. Terminal-Bench-Science evaluates agents in realistic environments and grades concrete artifacts such as analyses, simulations, proofs, code, and data products with reproducible, task-specific tests.
 
-**We need a benchmark that keeps pace with the frontier.** Too often, scientific benchmarks are built for publications and citations rather than maintained as mechanisms for driving progress. They are released once and then abandoned as models advance and known limitations persist. Terminal-Bench-Science is a continuous benchmark that evolves alongside the AI frontier. Through regular releases, scientists can contribute new workflows, improve existing tasks, and create a feedback loop between scientific needs and AI development.
+**We need a benchmark that keeps pace with the frontier.** Too many scientific benchmarks are built to be cited, not maintained. They are released once and then abandoned as models advance and known limitations persist. Terminal-Bench-Science is a continuous benchmark that evolves alongside the AI frontier. Through regular releases, scientists can contribute new workflows, improve existing tasks, and create a feedback loop between scientific needs and AI development.
 
 <ScienceFeedbackLoop />
 
@@ -37,29 +37,29 @@ Across 920 proposals and 385 implementation pull requests from 376 contributors 
 
 ## Results
 
-Terminal-Bench-Science 0.1 leaves substantial room for progress on AI agents for scientific research. Claude Opus 5 with Claude Code achieves the highest resolution rate at 30.0%, followed by GPT-5.6 Sol with Codex at 22.4% and Claude Fable 5 with Claude Code at 21.4%. Every other system resolves roughly one task in ten or fewer, from Claude Opus 4.8 with Claude Code at 10.5% down to GPT-5.6 Luna with Codex at 3.3%.
+Terminal-Bench-Science 0.1 leaves substantial room for progress on AI agents for scientific research. Claude Opus 5 with Claude Code achieves the highest resolution rate at 30.0%, followed by GPT-5.6 Sol with Codex at 22.4% and Claude Fable 5 with Claude Code at 21.4%. Every other system resolves roughly one task in ten or fewer, with Claude Opus 4.8, GPT-5.6 Terra, GLM 5.3, Kimi K3, and Grok 4.6 grouped between 7% and 11% and GPT-5.6 Luna at 3.3%.
 
-Terminal-Bench-Science distinguishes between systems about as well as Terminal-Bench 3.0 while pushing resolution rates down by more than 10 points for every model evaluated on both. Fable 5 and Opus 4.8, both in Claude Code, are 4.9 points apart on Terminal-Bench 2.1 and 12.7 points apart on Terminal-Bench 3.0; on Terminal-Bench-Science 0.1 the gap is 11.0 points, with Fable 5 resolving twice as many tasks (21.4% vs 10.5%). Strength as a software-engineering agent carries over only partially to research work.
+Terminal-Bench-Science distinguishes between systems about as well as Terminal-Bench 3.0 while pushing resolution rates down by more than 10 points for every model evaluated on both. This is by design: task difficulty was calibrated against the newest frontier models during review, and we will keep recalibrating as new frontier models are released, moving the bar accordingly.
 
 <DiscriminationSlopeChart />
 
-Resolution rates also vary by scientific domain. Opus 5 leads overall, but Sol exceeds it on mathematical sciences (31.4% vs 25.5%) while trailing on life, earth, and engineering sciences.
-
-<DomainRadarAnnouncement />
-
-Performance is only one dimension of progress. The cost-resolution frontier shows a clear trade-off: GPT-5.6 Luna, Terra, and Sol occupy lower-cost points on the frontier, while Claude Opus 5 achieves the highest resolution rate at greater cost.
+Performance is only one dimension of progress. The cost-resolution frontier shows a clear trade-off: GPT-5.6 Luna, GPT-5.6 Terra, and GPT-5.6 Sol occupy lower-cost points on the frontier, while Claude Opus 5 achieves the highest resolution rate at greater cost. Claude Fable 5 reaches a resolution rate similar to GPT-5.6 Sol (21.4% vs 22.4%) at more than three times the cost ($14.2k vs $4.2k).
 
 <CostResolutionFrontier />
 
-Token usage reveals a different efficiency frontier. Grok 4.6 uses the fewest tokens among the systems shown, while Fable 5 and Opus 5 provide progressively higher resolution rates with greater token use.
+Token usage reveals a different efficiency frontier. Kimi K3 uses the fewest tokens among the systems shown, while Claude Fable 5 and Claude Opus 5 provide progressively higher resolution rates with greater token use. Despite similar resolution rates, Claude Fable 5 uses about a quarter fewer tokens than GPT-5.6 Sol (6.4B vs 8.4B), even though its run cost more than three times as much.
 
 <TokenResolutionFrontier />
 
-Each Terminal-Bench-Science release is calibrated against current frontier models. For 0.1, this included Claude Opus 5 and GPT-5.6 Sol. As stronger models emerge, we will use them to evaluate and calibrate new and improved tasks for future releases, allowing the benchmark to evolve alongside the frontier.
+Resolution rates also vary by scientific domain. Claude Opus 5 dominates the second-strongest system, GPT-5.6 Sol, across all domains except the mathematical sciences, where GPT-5.6 Sol leads (31.4% vs 25.5%).
+
+<DomainRadarAnnouncement />
+
+Each Terminal-Bench-Science release is calibrated against current frontier models. For Terminal-Bench-Science 0.1, this included Claude Opus 5 and GPT-5.6 Sol. As stronger models emerge, we will use them to evaluate and calibrate new and improved tasks for future releases, allowing the benchmark to evolve alongside the frontier.
 
 ## Conclusion and Roadmap
 
-Terminal-Bench-Science 0.1 is a community effort by researchers across the life, physical, earth, mathematical, and engineering sciences, together with the Terminal-Bench and [Harbor](https://www.harborframework.com/) team. It is the most rigorous benchmark of scientific agent capabilities we could build together in the open, but it is only the first release of a continuous benchmark.
+Terminal-Bench-Science 0.1 is a community effort by researchers across the life, physical, earth, mathematical, and engineering sciences, together with the Terminal-Bench and [Harbor](https://www.harborframework.com/) team. It is the most rigorous benchmark of scientific agent capabilities we could build together in the open, and we are only getting started: Terminal-Bench-Science 0.1 is the first release of a continuous benchmark.
 
 Regular releases will add tasks in new scientific domains, broaden coverage within existing ones, retire tasks that agents saturate or that review reveals to be underspecified, and keep the [leaderboard](/) current as frontier models ship. Tasks are versioned so that trials can be re-used, re-graded, or re-run with a single Harbor command, which keeps the cost of updating results low. Progress is tracked in the open on the [task dashboard](https://stevendillmann.github.io/tb-science-task-dashboard/), and every release is tagged on [GitHub](https://github.com/harbor-framework/terminal-bench-science/releases) and [Harbor Hub](https://hub.harborframework.com/datasets/terminal-bench-science/terminal-bench-science/latest).
 
