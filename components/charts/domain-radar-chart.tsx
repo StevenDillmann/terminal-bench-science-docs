@@ -258,6 +258,10 @@ type DomainRadarChartProps = {
   axes: readonly DomainRadarAxis[];
   className?: string;
   id?: string;
+  defaultSelectedIds?: readonly string[];
+  /** When false, render only the radar plot (for narrow embeds like the announcement). */
+  showTable?: boolean;
+  plotMaxWidth?: number;
 };
 
 export function DomainRadarChart({
@@ -265,9 +269,14 @@ export function DomainRadarChart({
   axes,
   className,
   id,
+  defaultSelectedIds = [],
+  showTable = true,
+  plotMaxWidth = 620,
 }: DomainRadarChartProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => [
+    ...defaultSelectedIds,
+  ]);
   const [sort, setSort] = useState<{
     axisId: string;
     direction: 'asc' | 'desc';
@@ -327,7 +336,14 @@ export function DomainRadarChart({
 
   return (
     <div id={id} className={className}>
-      <div className="grid min-w-0 lg:grid-cols-[minmax(34rem,1.08fr)_minmax(28rem,0.92fr)]">
+      <div
+        className={cn(
+          showTable
+            ? 'grid min-w-0 lg:grid-cols-[minmax(34rem,1.08fr)_minmax(28rem,0.92fr)]'
+            : 'mx-auto flex w-full max-w-sm flex-col items-center',
+        )}
+      >
+        {showTable ? (
         <div className="min-w-0 overflow-x-auto">
           <table className="w-full min-w-[34rem] border-separate border-spacing-0">
             <thead>
@@ -507,12 +523,19 @@ export function DomainRadarChart({
             </tbody>
           </table>
         </div>
-        <div className="flex min-h-[32rem] min-w-0 flex-col items-center justify-center border-t p-3 lg:border-t-0 lg:border-l">
+        ) : null}
+        <div
+          className={cn(
+            'flex min-w-0 flex-col items-center justify-center p-3',
+            showTable && 'min-h-[32rem] border-t lg:border-t-0 lg:border-l',
+          )}
+        >
         <svg
           viewBox="-60 -35 640 590"
           role="img"
           aria-label="Resolution rates across five science domains"
-          className="block w-full max-w-[620px]"
+          className="block w-full"
+          style={{ maxWidth: plotMaxWidth }}
           onClick={() => {
             setSelectedIds([]);
             setActiveId(null);

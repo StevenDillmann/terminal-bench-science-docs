@@ -1,5 +1,12 @@
 import { createParser } from 'nuqs';
 
+import {
+  ALL_DOMAIN_RADAR_AXES,
+  type DomainRadarAxis,
+} from '@/lib/domain-radar-axes';
+
+export { ALL_DOMAIN_RADAR_AXES, type DomainRadarAxis };
+
 export const DOMAIN_IDS = [
   'all',
   'life',
@@ -11,25 +18,12 @@ export const DOMAIN_IDS = [
 
 export type DomainId = (typeof DOMAIN_IDS)[number];
 
-export type DomainRadarAxis = {
-  id: string;
-  label: string;
-};
-
 type DomainDefinition = {
   id: DomainId;
   label: string;
   title: string;
   color: string;
 };
-
-export const ALL_DOMAIN_RADAR_AXES = [
-  { id: 'life', label: 'Life Sciences' },
-  { id: 'earth', label: 'Earth Sciences' },
-  { id: 'engineering', label: 'Engineering Sciences' },
-  { id: 'mathematical', label: 'Mathematical Sciences' },
-  { id: 'physical', label: 'Physical Sciences' },
-] as const satisfies readonly DomainRadarAxis[];
 
 export const DOMAINS: readonly DomainDefinition[] = [
   { id: 'all', label: 'ALL', title: 'All Domains', color: '#038f99' },

@@ -105,11 +105,14 @@ export function buildDiscriminationSlopeData(): DiscriminationSlopePoint[] {
     if (!science) continue;
 
     const tb3 = findBoardMatch(tb3Rows, model, science.agent);
-    const terminal = findBoardMatch(
-      TERMINAL_BENCH_2_1_LEADERBOARD_SNAPSHOT,
-      model,
-      science.agent,
-    );
+    const terminal =
+      model === 'GPT-5.6 Sol'
+        ? null
+        : findBoardMatch(
+            TERMINAL_BENCH_2_1_LEADERBOARD_SNAPSHOT,
+            model,
+            science.agent,
+          );
 
     points.push({
       model,

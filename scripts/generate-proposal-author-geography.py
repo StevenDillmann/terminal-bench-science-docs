@@ -42,16 +42,24 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "public"
 CACHE_DIR = Path(tempfile.gettempdir()) / "tb-science-proposal-author-map"
 
+# Land fill/coast follow the site's `muted` / `border` tokens so the map sits on
+# the page background (the ocean is transparent) with continents still readable.
 THEMES = {
     "light": {
-        "coast": "#dddddd",
-        "density": ["#9edadd", "#34b5bc", "#038f99", "#006c74"],
+        "land": "#f4f4f5",
+        "coast": "#e4e4e7",
+        "density": ["#b9e3e6", "#6cc6cb", "#2aa4ab", "#038f99"],
     },
     "dark": {
-        "coast": "#52525b",
-        "density": ["#63d5da", "#22bcc4", "#06a2ab", "#d7ffff"],
+        "land": "#27272a",
+        "coast": "#3f3f46",
+        "density": ["#1f6f75", "#1f9aa2", "#3fc3ca", "#a6ecef"],
     },
 }
+# Gamma applied to normalised density before colouring; higher keeps sparse
+# regions faint instead of flattening everything toward full intensity.
+DENSITY_GAMMA = 0.36
+DENSITY_MAX_ALPHA = 0.84
 
 
 def fetch_json(url: str, *, headers: dict[str, str] | None = None) -> object:
@@ -466,12 +474,12 @@ def render(
     palette = THEMES[theme]
     # Compress the dynamic range so isolated authors remain clearly visible
     # beside dense regional clusters.
-    visible_density = np.power(density, 0.24)
+    visible_density = np.power(density, DENSITY_GAMMA)
     rgba = LinearSegmentedColormap.from_list(
         f"tb_science_proposal_density_{theme}", palette["density"]
     )(visible_density)
     rgba[..., 3] = np.where(
-        density > 0.0015, np.clip(visible_density * 1.4, 0.0, 0.94), 0.0
+        density > 0.0015, np.clip(visible_density * DENSITY_MAX_ALPHA, 0.0, DENSITY_MAX_ALPHA), 0.0
     )
 
     fig = plt.figure(figsize=(12.8, 5.5), dpi=100, facecolor=(0, 0, 0, 0))
@@ -485,7 +493,7 @@ def render(
         ax.add_patch(
             PathPatch(
                 path,
-                facecolor="none",
+                facecolor=palette["land"],
                 edgecolor=palette["coast"],
                 linewidth=0.55,
                 zorder=1,

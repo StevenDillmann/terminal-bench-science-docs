@@ -31,7 +31,7 @@ export type ParetoDatum = {
 };
 
 const MIN_WIDTH = 480;
-const HEIGHT = 580;
+const DEFAULT_HEIGHT = 580;
 const MARGIN = { top: 20, right: 28, bottom: 52, left: 84 };
 /** Half-side length of plot markers (squares). */
 const DOT_HALF = 4;
@@ -186,6 +186,8 @@ type ParetoScatterChartProps = {
   accentColor: string;
   className?: string;
   id?: string;
+  height?: number;
+  showNonFrontierLabels?: boolean;
 };
 
 type ActiveTip = {
@@ -209,6 +211,8 @@ export function ParetoScatterChart({
   accentColor,
   className,
   id,
+  height = DEFAULT_HEIGHT,
+  showNonFrontierLabels = false,
 }: ParetoScatterChartProps) {
   const plotRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(MIN_WIDTH);
@@ -260,7 +264,7 @@ export function ParetoScatterChart({
   }
 
   const plotW = Math.max(0, width - MARGIN.left - MARGIN.right);
-  const plotH = Math.max(0, HEIGHT - MARGIN.top - MARGIN.bottom);
+  const plotH = Math.max(0, height - MARGIN.top - MARGIN.bottom);
 
   const xs = data.map((d) => d.x);
   const ys = data.map((d) => d.y);
@@ -283,11 +287,11 @@ export function ParetoScatterChart({
 
   return (
     <div id={id} className={cn('w-full min-w-0', className)}>
-      <div ref={plotRef} className="relative w-full overflow-hidden" style={{ height: HEIGHT }}>
+      <div ref={plotRef} className="relative w-full overflow-hidden" style={{ height }}>
       <svg
-        viewBox={`0 0 ${width} ${HEIGHT}`}
+        viewBox={`0 0 ${width} ${height}`}
         width={width}
-        height={HEIGHT}
+        height={height}
         role="img"
         aria-label={`Pareto scatter of ${yAxis.label} versus ${xAxis.label} for ${domainDefinition.title}`}
         className="block max-w-full"
@@ -360,7 +364,7 @@ export function ParetoScatterChart({
 
         <text
           x={MARGIN.left + plotW / 2}
-          y={HEIGHT - 12}
+          y={height - 12}
           textAnchor="middle"
           className="fill-muted-foreground font-normal"
           fontSize={12}
@@ -443,27 +447,41 @@ export function ParetoScatterChart({
                     ? undefined
                     : active?.id === datum.id
                       ? 'fill-foreground'
-                      : 'fill-muted-foreground/35'
+                      : showNonFrontierLabels
+                        ? 'fill-muted-foreground/55'
+                        : 'fill-muted-foreground/35'
                 }
                 style={{ pointerEvents: 'none' }}
               />
-              {datum.onFrontier ? (
+              {datum.onFrontier || showNonFrontierLabels ? (
                 <text
                   x={labelX}
                   y={agentText ? cy - 2 : cy + 4}
                   textAnchor={labelOnLeft ? 'end' : 'start'}
                   dominantBaseline="auto"
-                  className="fill-foreground"
+                  className={
+                    datum.onFrontier
+                      ? 'fill-foreground'
+                      : 'fill-muted-foreground'
+                  }
                   style={{ pointerEvents: 'none' }}
                 >
-                  <tspan x={labelX} fontSize={12} fontWeight={500}>
+                  <tspan
+                    x={labelX}
+                    fontSize={12}
+                    fontWeight={datum.onFrontier ? 500 : 400}
+                  >
                     {modelText}
                   </tspan>
                   {agentText ? (
                     <tspan
                       x={labelX}
                       dy={12}
-                      className="fill-muted-foreground"
+                      className={
+                        datum.onFrontier
+                          ? 'fill-muted-foreground'
+                          : 'fill-muted-foreground/70'
+                      }
                       fontSize={10}
                       fontWeight={400}
                     >

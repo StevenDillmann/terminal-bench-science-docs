@@ -26,6 +26,7 @@ const industrySponsors = [
   ['Bespoke Labs', 'https://bespokelabs.ai/'],
   ['Google', 'https://www.google.com/'],
   ['Modal', 'https://modal.com/'],
+  ['Moonshot AI', 'https://www.moonshot.ai/'],
   ['Snorkel AI', 'https://snorkel.ai/'],
   ['SpaceXAI', 'https://x.ai/'],
   ['UniPat AI', 'https://unipat.ai/'],

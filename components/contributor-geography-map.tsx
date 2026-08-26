@@ -1,5 +1,9 @@
 import Image from 'next/image';
 
+/**
+ * Served as-is: the maps are lossless WebP with a transparent background, and
+ * the image optimizer can re-encode them to JPEG, which drops the alpha channel.
+ */
 export function ContributorGeographyMap() {
   return (
     <figure className="my-6 w-full not-prose">
@@ -9,6 +13,7 @@ export function ContributorGeographyMap() {
         width={1280}
         height={550}
         className="block h-auto w-full dark:hidden"
+        unoptimized
       />
       <Image
         src="/tb-science-contributor-geography-dark.webp"
@@ -16,6 +21,7 @@ export function ContributorGeographyMap() {
         width={1280}
         height={550}
         className="hidden h-auto w-full dark:block"
+        unoptimized
       />
       <figcaption className="mt-2 text-center text-sm text-muted-foreground">
         <a

@@ -162,7 +162,7 @@ export function DiscriminationSlopeChart() {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"
         role="img"
-        aria-label="Pass rate by model on Terminal-Bench 2.1, Terminal-Bench 3.0, and Terminal-Bench-Science 0.1"
+        aria-label="Resolution rate by model on Terminal-Bench 2.1, Terminal-Bench 3.0, and Terminal-Bench-Science 0.1"
         className="mx-auto block max-w-full"
       >
         {COLUMNS.map((column) => (
@@ -231,9 +231,10 @@ export function DiscriminationSlopeChart() {
                   textAnchor={isLeft ? 'end' : 'start'}
                   dominantBaseline="central"
                   paintOrder="stroke"
+                  fill={row.color}
                   strokeWidth={3}
                   strokeLinejoin="round"
-                  className="fill-foreground stroke-background font-mono"
+                  className="stroke-background font-mono"
                   fontSize={showName ? NAME_FONT_SIZE : VALUE_FONT_SIZE}
                 >
                   {showName
@@ -252,7 +253,7 @@ export function DiscriminationSlopeChart() {
           rel="noreferrer"
           className="underline-offset-4 hover:text-foreground hover:underline"
         >
-          Pass Rates on Terminal-Bench 2.1, Terminal-Bench 3.0, and
+          Resolution Rates on Terminal-Bench 2.1, Terminal-Bench 3.0, and
           Terminal-Bench-Science 0.1
         </a>
       </figcaption>

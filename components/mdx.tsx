@@ -3,7 +3,12 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import type { MDXComponents } from 'mdx/types';
 
 import { CostPassRateParetoChart } from '@/components/charts/cost-pass-rate-pareto-chart';
+import {
+  CostResolutionFrontier,
+  TokenResolutionFrontier,
+} from '@/components/charts/cost-resolution-frontier';
 import { DiscriminationSlopeChart } from '@/components/charts/discrimination-slope-chart';
+import { DomainRadarAnnouncement } from '@/components/charts/domain-radar-announcement';
 import { PassRateBarChart } from '@/components/charts/pass-rate-bar-chart';
 import { RoadmapDiagram } from '@/components/charts/roadmap-diagram';
 import { ScienceFeedbackLoop } from '@/components/charts/science-feedback-loop';
@@ -20,7 +25,10 @@ export function getMDXComponents(components?: MDXComponents) {
     pre: MdxPre,
     PassRateBarChart,
     DiscriminationSlopeChart,
+    DomainRadarAnnouncement,
     CostPassRateParetoChart,
+    CostResolutionFrontier,
+    TokenResolutionFrontier,
     TokensVsStepsChart,
     RoadmapDiagram,
     ScienceFeedbackLoop,
