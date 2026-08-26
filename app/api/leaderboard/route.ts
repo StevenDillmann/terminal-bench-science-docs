@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { readHarborLeaderboardWithDomains } from '@/lib/harbor-leaderboard.server';
+import {
+  readHarborLeaderboardWithDomains,
+  readPublicHarborLeaderboard,
+} from '@/lib/harbor-leaderboard.server';
 import {
   TERMINAL_BENCH_LEADERBOARD,
   TERMINAL_BENCH_PACKAGE,
@@ -9,7 +12,11 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+/** Let the CDN absorb traffic in production; always fresh while developing. */
+const CACHE_CONTROL =
+  process.env.NODE_ENV === 'development'
+    ? 'no-store'
+    : 'public, s-maxage=300, stale-while-revalidate=3600';
 
 function notFound() {
   return NextResponse.json(
@@ -19,13 +26,6 @@ function notFound() {
 }
 
 export async function GET(request: NextRequest) {
-  if (
-    process.env.NODE_ENV !== 'development' ||
-    !LOCAL_HOSTS.has(request.nextUrl.hostname)
-  ) {
-    return notFound();
-  }
-
   const packageName = request.nextUrl.searchParams.get('package');
   const leaderboardName = request.nextUrl.searchParams.get('name');
   if (
@@ -35,40 +35,45 @@ export async function GET(request: NextRequest) {
     return notFound();
   }
 
+  // With a Harbor API key we can attach per-domain metrics (read from each
+  // row's trials). Without one, or if that enrichment fails, serve the public
+  // leaderboard so the table always renders.
   const apiKey = process.env.HARBOR_API_KEY?.trim();
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        error: {
-          message: 'HARBOR_API_KEY is not configured',
-          code: 'not_configured',
-        },
-      },
-      { status: 503 },
-    );
+  if (apiKey) {
+    try {
+      const payload = await readHarborLeaderboardWithDomains(
+        apiKey,
+        TERMINAL_BENCH_PACKAGE,
+        TERMINAL_BENCH_LEADERBOARD,
+      );
+      return NextResponse.json(payload, {
+        headers: { 'Cache-Control': CACHE_CONTROL },
+      });
+    } catch (error) {
+      console.error(
+        'Failed to load the Harbor leaderboard with domain metrics; falling back to the public leaderboard:',
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
 
   try {
-    const payload = await readHarborLeaderboardWithDomains(
-      apiKey,
+    const payload = await readPublicHarborLeaderboard(
       TERMINAL_BENCH_PACKAGE,
       TERMINAL_BENCH_LEADERBOARD,
     );
-
     return NextResponse.json(payload, {
-      headers: {
-        'Cache-Control': 'no-store',
-      },
+      headers: { 'Cache-Control': CACHE_CONTROL },
     });
   } catch (error) {
     console.error(
-      'Failed to load the private Harbor leaderboard:',
+      'Failed to load the public Harbor leaderboard:',
       error instanceof Error ? error.message : error,
     );
     return NextResponse.json(
       {
         error: {
-          message: 'Failed to load the private Harbor leaderboard',
+          message: 'Failed to load the Harbor leaderboard',
           code: 'upstream_error',
         },
       },

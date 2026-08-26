@@ -558,6 +558,36 @@ async function addDerivedMetrics(
   };
 }
 
+/**
+ * Read a public leaderboard without credentials. Harbor Hub's leaderboard-read
+ * edge function serves public boards anonymously; the response carries the
+ * standard columns and metrics but no per-domain breakdown.
+ */
+export async function readPublicHarborLeaderboard(
+  packageName: string,
+  leaderboardName: string,
+): Promise<LeaderboardReadResponse> {
+  const response = await fetch(`${supabaseUrl()}/functions/v1/leaderboard-read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ package: packageName, name: leaderboardName }),
+    cache: 'no-store',
+  });
+  const payload: unknown = await response.json();
+  if (!response.ok) {
+    const errorPayload: JsonObject = isObject(payload) ? payload : {};
+    const nestedError: JsonObject = isObject(errorPayload.error)
+      ? errorPayload.error
+      : {};
+    const message =
+      (typeof nestedError.message === 'string' && nestedError.message) ||
+      (typeof errorPayload.message === 'string' && errorPayload.message) ||
+      `Harbor request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as LeaderboardReadResponse;
+}
+
 export async function readHarborLeaderboardWithDomains(
   apiKey: string,
   packageName: string,
