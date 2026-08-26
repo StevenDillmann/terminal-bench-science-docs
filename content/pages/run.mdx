@@ -1,6 +1,6 @@
 ---
 title: Run Terminal-Bench-Science
-description: Run scientific workflow tasks with Terminal-Bench-Science.
+description: How to run Terminal-Bench-Science 0.1.
 ---
 
 ## Install Harbor
@@ -24,31 +24,16 @@ pip install 'harbor[modal]'
   </Tab>
 </Tabs>
 
-## Clone the benchmark
+## Run Terminal-Bench-Science
+
+Terminal-Bench-Science 0.1 contains 70 tasks across the life, physical, earth, mathematical, and engineering sciences. We use Modal for our experiments, and you can also run the benchmark with other Harbor-supported environments, including Daytona. This release does not require GPUs.
 
 ```bash
-git clone https://github.com/harbor-framework/terminal-bench-science.git
-cd terminal-bench-science
-```
-
-## Run a scientific workflow task
-
-Tasks cover life sciences, physical sciences, earth sciences, mathematical sciences, and engineering sciences. Run an individual task by its domain, field, and task name.
-
-```bash
-harbor run -p tasks/<task-domain>/<task-field>/<task-name> \
-  -a <agent> \
-  -m <provider/model>
-```
-
-For example, use `life-sciences`, `physical-sciences`, `earth-sciences`, `mathematical-sciences`, or `engineering-sciences` as `<task-domain>`. Browse available tasks in the [benchmark repository](https://github.com/harbor-framework/terminal-bench-science/tree/main/tasks).
-
-## Validate a task
-
-Run the Oracle agent to verify a task's reference solution before evaluating an AI agent.
-
-```bash
-harbor run -p tasks/<task-domain>/<task-field>/<task-name> -a oracle
+harbor run -d terminal-bench-science/terminal-bench-science@latest \
+  -e modal \
+  -a claude-code \
+  -m anthropic/claude-opus-5 \
+  -n 32
 ```
 
 ## Analyze results
@@ -69,4 +54,4 @@ harbor upload jobs/<name> # or harbor run ... --upload
 
 ## Join our community
 
-Follow task coverage, open proposals, and pull requests in the [Task Dashboard](https://stevendillmann.github.io/tb-science-task-dashboard/). To contribute a workflow or get help, [join our Discord](https://discord.com/invite/2Pe5uWGcV3).
+If you enjoy the benchmark or have feedback on how we can improve it, [join our Discord](https://discord.com/invite/2Pe5uWGcV3) and let us know in `#tb-science`, or contact [Steven Dillmann](mailto:stevendi@stanford.edu).

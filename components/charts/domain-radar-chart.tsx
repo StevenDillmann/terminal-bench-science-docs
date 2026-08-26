@@ -544,6 +544,10 @@ export function DomainRadarChart({
           role="img"
           aria-label="Resolution rates across five science domains"
           className="block w-full max-w-[620px]"
+          onClick={() => {
+            setSelectedIds([]);
+            setActiveId(null);
+          }}
         >
           <title>Domain radar chart</title>
         {scale.steps.map((step) => (
@@ -632,7 +636,10 @@ export function DomainRadarChart({
                 onMouseLeave={() => setActiveId(null)}
                 onFocus={() => setActiveId(datum.id)}
                 onBlur={() => setActiveId(null)}
-                onClick={() => toggleSelection(datum.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleSelection(datum.id);
+                }}
               />
               <polygon
                 points={points}

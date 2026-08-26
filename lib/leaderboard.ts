@@ -114,6 +114,15 @@ export function harborDatasetUrl(
   return `${HARBOR_HUB_URL}/datasets/${encodeURIComponent(org)}/${encodeURIComponent(name)}/${encodeURIComponent(version)}`;
 }
 
+/** Harbor Hub leaderboard tab for a package. */
+export function harborLeaderboardUrl(
+  packageName: string,
+  leaderboardName: string,
+  version = 'latest',
+): string {
+  return `${harborDatasetUrl(packageName, version)}?tab=leaderboard&leaderboard=${encodeURIComponent(leaderboardName)}`;
+}
+
 /** Harbor Hub detail page for a leaderboard row. */
 export function harborLeaderboardRowUrl(
   packageName: string,

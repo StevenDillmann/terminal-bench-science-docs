@@ -74,7 +74,13 @@ export function ContributorsGrid() {
   return (
     <div className="-mx-4 grid w-auto grid-cols-2 gap-px overflow-hidden rounded-none bg-border py-px sm:grid-cols-3 md:mx-0 md:w-full md:grid-cols-4 md:rounded-xl md:p-px">
       {CONTRIBUTOR_GROUPS.map((group) => {
-        const count = group.contributors.length;
+        const contributors =
+          group.title === 'Task Contributors'
+            ? [...group.contributors].sort((a, b) =>
+                a.name.localeCompare(b.name),
+              )
+            : group.contributors;
+        const count = contributors.length;
         const pad2 = rowPadCount(count, 2);
         const pad3 = rowPadCount(count, 3);
         const pad4 = rowPadCount(count, 4);
@@ -87,7 +93,7 @@ export function ContributorsGrid() {
                 {group.title}
               </h2>
             </div>
-            {group.contributors.map((contributor) => (
+            {contributors.map((contributor) => (
               <ContributorCard
                 key={`${group.title}:${contributor.name}:${contributor.github ?? contributor.href ?? 'none'}`}
                 contributor={contributor}

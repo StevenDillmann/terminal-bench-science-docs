@@ -22,14 +22,14 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link
               href="/run"
-              className={`${buttonVariants({ variant: 'default', size: 'lg' })} hover:!bg-[#038f99] hover:!text-white`}
+              className={buttonVariants({ variant: 'default', size: 'lg' })}
             >
               Run Terminal-Bench-Science
               <HugeiconsIcon icon={TerminalIcon} strokeWidth={2} />
             </Link>
             <Link
               href="/announcement"
-              className={`${buttonVariants({ variant: 'secondary', size: 'lg' })} hover:!bg-[#038f99]/10 hover:!text-[#027b84] dark:hover:!bg-[#038f99]/15 dark:hover:!text-[#038f99]`}
+              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
             >
               Read the announcement
               <HugeiconsIcon icon={ArrowUpRight03Icon} strokeWidth={2} />

@@ -31,7 +31,9 @@ export default async function Page(props: PageProps<'/[slug]'>) {
       {page.data.description ? (
         <DocsDescription>{page.data.description}</DocsDescription>
       ) : null}
-      <DocsBody>
+      <DocsBody
+        className={cn(slug === 'announcement' && '[&_p]:text-justify')}
+      >
         <MDX components={getMDXComponents()} />
       </DocsBody>
     </article>

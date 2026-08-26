@@ -1,27 +1,25 @@
 ---
 title: Terminal-Bench-Science 0.1
-description: Terminal-Bench-Science measures AI agent capabilities across scientific research workflows, putting scientists in the driver’s seat to define the bar for AI in their fields.
+description: Terminal-Bench-Science evaluates AI agents on workflows from researchers' own work. Scientists, not model developers or vendors, set the bar for scientific capability in AI.
 ---
 
-Built by the team behind earlier [Terminal-Bench](https://www.tbench.ai/) releases and [Harbor](https://www.harborframework.com/), Terminal-Bench 3.0 (formerly Frontier-Bench) is an on-going large-scale community effort to source the most diverse, difficult and high-quality tasks.
+Terminal-Bench-Science is a benchmark led by researchers at Stanford and built by the team behind [Terminal-Bench](https://www.tbench.ai/) in collaboration with [domain experts from a range of scientific disciplines and research institutions](/contributors) around the world. It measures the frontier of AI agent capabilities through a diverse set of challenging, expert-curated workflows drawn from scientific research.
 
-<ContributorGeographyMap />
-
-Our first release contains [74 tasks across 7 domains](https://github.com/harbor-framework/terminal-bench-science#task-distribution). The best models achieve ~34% on Terminal-Bench 3.0.
+Terminal-Bench-Science is a continuous benchmark that evolves alongside frontier AI, creating a feedback loop between scientific needs and AI development. Our first release includes [70 tasks](https://github.com/harbor-framework/terminal-bench-science#task-coverage) from the life, physical, earth, mathematical, and engineering sciences. The strongest model evaluated, Claude Opus 5, achieves a 30% resolution rate on Terminal-Bench-Science 0.1.
 
 <PassRateBarChart />
 
-Terminal-Bench 3.0 is a continuous benchmark. The frontier is wide and dynamic, Terminal-Bench evolves along with it. We are already [developing](https://github.com/harbor-framework/terminal-bench-science/issues/1422) subsequent releases, with new and improved tasks.
-
 ## Overview
 
-Terminal-Bench 3.0 expands on Terminal-Bench 2.1 with more challenging tasks across a wider distribution of valuable work. Terminal-Bench 3.0 also introduces a new way to continuously improve benchmarks with CI/CD, semantic versioning, and result migrations.
+While Terminal-Bench has helped drive progress in AI agents for software engineering, Terminal-Bench-Science brings the same ambition to scientific research. Our goal is to drive the development of agents with scientific capabilities that make them useful research assistants. These agents should reliably execute technically demanding and time-consuming workflows, freeing scientists to focus more of their time on the fundamentally human aspects of science: choosing important questions, forming hypotheses, interpreting results, and communicating findings. In this role, AI agents can extend what researchers are able to accomplish and help accelerate scientific discovery.
 
-**We need a harder benchmark.** Many Terminal-Bench tasks have become saturated and leaderboard entries are condensed into a narrow range that may not fully represent capability gaps across models.
+Achieving this requires benchmarks that reflect real scientific practice, provide verifiable evidence of capability, and evolve alongside the AI frontier.
 
-**We need a more representative benchmark.** Terminal-Bench was built on the thesis that code and the CLI were powerful tools for agents to accomplish tasks. Terminal-Bench 3.0 expands on that idea by introducing more task diversity to measure performance across more types of coding and non-coding work. "Work" has expanded to longer-running tasks across a greater diversity of domains and "computer" has expanded to richer environments, multi-container networks, and GPUs. We anticipate this definition continuing to broaden in future Terminal-Bench versions.
+**We need benchmarks drawn from real scientific workflows.** Scientific capability should be evaluated on work drawn from research practice, not textbook questions or standardized exercises. Those workflows should come from practicing scientists themselves. Terminal-Bench-Science gives researchers a direct voice in setting the bar for AI progress on the problems they care about and provides a shared platform for the scientific community to define that bar together. Science is too important for its benchmarks to be defined primarily by model providers or data vendors; the research community should determine what constitutes scientific capability.
 
-**We're fixing the way benchmarks are built.** Many benchmarks have known problems, many of these problems go unfixed. It erodes the usefulness of the benchmark and also dilutes the signal. Terminal-Bench 3.0 is a continuously improving benchmark and [open community project](https://github.com/harbor-framework/terminal-bench-science). We will regularly release updates to fix and add tasks, making the benchmark more valuable over time.
+**We need verifiable evidence of scientific capability.** Without reliable evaluation, we cannot tell whether agent capabilities are improving or where their limitations remain. Terminal-Bench-Science evaluates agents in realistic environments and grades concrete outputs with reproducible, task-specific tests.
+
+**We need a benchmark that keeps pace with the frontier.** Terminal-Bench-Science is designed to remain challenging as agents improve. Continuous releases allow us to add new workflows, improve existing tasks, and evolve the benchmark alongside scientific needs and AI development.
 
 ## Tasks
 
@@ -84,5 +82,7 @@ We appreciate our sponsors who made this project possible including [Modal](http
 From the creators of [Harbor](https://www.harborframework.com/) and [Terminal-Bench](https://www.tbench.ai/).
 
 **Written by:** Ryan Marten, Alex Shaw, Andy Konwinski
+
+<ContributorGeographyMap />
 
 [^1]: Grok 4.5 was removed from this chart due to a cost reporting issue with the Cursor CLI harness.

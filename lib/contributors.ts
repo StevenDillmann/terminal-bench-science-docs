@@ -28,7 +28,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Ludwig Schmidt',
-        affiliation: 'Stanford University · Anthropic',
+        affiliation: 'Stanford University, Anthropic',
         href: 'https://scholar.google.com/citations?user=SWMKy70AAAAJ',
       },
     ],
@@ -73,7 +73,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
     contributors: [
       {
         name: 'Ben Blaiszik',
-        affiliation: 'University of Chicago · Argonne National Laboratory',
+        affiliation: 'University of Chicago, Argonne National Laboratory',
         href: 'https://scholar.google.com/citations?user=J-x5n7IAAAAJ',
       },
       {
@@ -158,7 +158,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Ben Blaiszik',
-        affiliation: 'University of Chicago · Argonne National Laboratory',
+        affiliation: 'University of Chicago, Argonne National Laboratory',
         href: 'https://scholar.google.com/citations?user=J-x5n7IAAAAJ',
       },
       {
@@ -262,18 +262,13 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://www.linkedin.com/in/joshua-h-rines/',
       },
       {
-        name: 'Kai Horstmann',
-        affiliation: 'Cornell University',
-        href: 'https://scholar.google.com/citations?user=HkgDkoIAAAAJ',
-      },
-      {
         name: 'Maan Pandya',
         affiliation: 'Stanford University',
         href: 'https://www.linkedin.com/in/maanpandya/',
       },
       {
         name: 'Marcelo Alvarez',
-        affiliation: 'Stanford University · SLAC',
+        affiliation: 'Stanford University, SLAC',
         github: 'marcelo-alvarez',
       },
       {
@@ -398,7 +393,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Pranav Viswanath',
-        affiliation: 'University of Chicago · Argonne National Laboratory',
+        affiliation: 'University of Chicago, Argonne National Laboratory',
         href: 'https://scholar.google.com/citations?user=-yH7gIMAAAAJ',
       },
       {
@@ -448,7 +443,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
     ],
   },
   {
-    title: 'Advisors — AI',
+    title: 'AI Research Advisors',
     contributors: [
       {
         name: 'Ryan Marten',
@@ -457,7 +452,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Alex Shaw',
-        affiliation: 'Harbor Framework · Laude Institute',
+        affiliation: 'Harbor Framework, Laude Institute',
         href: 'https://scholar.google.com/citations?user=Kx79YqEAAAAJ',
       },
       {
@@ -477,18 +472,13 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Jenia Jitsev',
-        affiliation: 'Forschungszentrum Jülich · LAION',
+        affiliation: 'Forschungszentrum Jülich, LAION',
         href: 'https://scholar.google.com/citations?user=p1FuAMkAAAAJ',
       },
       {
         name: 'Bodhisattwa Majumder',
         affiliation: 'Allen Institute for AI',
         href: 'https://scholar.google.com/citations?user=cEM1a5gAAAAJ',
-      },
-      {
-        name: 'Peter Clark',
-        affiliation: 'Allen Institute for AI',
-        href: 'https://scholar.google.com/citations?user=o-5vyEsAAAAJ',
       },
       {
         name: 'Thomas Wolf',
@@ -508,13 +498,8 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
     ],
   },
   {
-    title: 'Advisors — Science',
+    title: 'Scientific Advisors',
     contributors: [
-      {
-        name: 'Anima Anandkumar',
-        affiliation: 'Caltech',
-        href: 'https://scholar.google.com/citations?user=bEcLezcAAAAJ',
-      },
       {
         name: 'Sara Beery',
         affiliation: 'MIT',
@@ -557,7 +542,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'Risa Wechsler',
-        affiliation: 'Stanford University · SLAC',
+        affiliation: 'Stanford University, SLAC',
         href: 'https://scholar.google.com/citations?user=83Ahn20AAAAJ',
       },
     ],

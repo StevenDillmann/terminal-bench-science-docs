@@ -7,7 +7,10 @@ import {
   harborDatasetUrl,
 } from '@/lib/leaderboard';
 
-const secondaryActionClass = `${buttonVariants({ variant: 'secondary', size: 'lg' })} hover:!bg-[#038f99]/10 hover:!text-[#027b84] dark:hover:!bg-[#038f99]/15 dark:hover:!text-[#038f99]`;
+const secondaryActionClass = buttonVariants({
+  variant: 'secondary',
+  size: 'lg',
+});
 
 export function TaskActions() {
   return (
