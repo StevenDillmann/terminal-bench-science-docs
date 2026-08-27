@@ -152,7 +152,7 @@ function domainDataToTsv(
   ]);
 
   return [
-    [domainExportTitle(domain, 'Domain Radar Data')],
+    [domainExportTitle(domain, 'Radar Data')],
     [],
     header,
     ...rows,
@@ -211,7 +211,7 @@ function CopyDomainRadarActions({
         cacheBust: true,
         pixelRatio: highResolutionExportScale(exportChart),
       });
-      if (!image) throw new Error('Could not create domain radar image.');
+      if (!image) throw new Error('Could not create radar image.');
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': image }),
       ]);
@@ -234,7 +234,7 @@ function CopyDomainRadarActions({
               type="button"
               variant="outline"
               size="icon"
-              aria-label="Copy domain radar data as TSV"
+              aria-label="Copy radar data as TSV"
               className="active:!translate-y-0"
               onClick={copyData}
             >
@@ -254,7 +254,7 @@ function CopyDomainRadarActions({
             ? 'Copied as TSV'
             : tableCopyState === 'error'
               ? 'Could not copy TSV'
-              : 'Copy domain radar data as TSV'}
+              : 'Copy radar data as TSV'}
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -264,7 +264,7 @@ function CopyDomainRadarActions({
               type="button"
               variant="outline"
               size="icon"
-              aria-label="Copy domain radar chart as PNG"
+              aria-label="Copy radar chart as PNG"
               className="active:!translate-y-0"
               onClick={copyChartImage}
             >
@@ -284,7 +284,7 @@ function CopyDomainRadarActions({
             ? 'Copied as PNG'
             : imageCopyState === 'error'
               ? 'Could not copy PNG'
-              : 'Copy domain radar chart as PNG'}
+              : 'Copy radar chart as PNG'}
         </TooltipContent>
       </Tooltip>
     </div>
@@ -388,7 +388,7 @@ export function DomainRadarView({ domain }: { domain: DomainId }) {
         id={DOMAIN_RADAR_IMAGE_ID}
         className="-mx-4 min-w-0 overflow-hidden rounded-none border border-x-0 bg-card md:mx-0 md:rounded-xl md:border-x"
       >
-        <ViewHeader title="Terminal-Bench-Science 0.1 Domain Radar" />
+        <ViewHeader title="Terminal-Bench-Science 0.1 Radar" />
         <DomainRadarChart
           data={chartData}
           axes={axes}

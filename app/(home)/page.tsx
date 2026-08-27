@@ -10,7 +10,7 @@ import { buttonVariants } from '@/components/ui/button';
 export default function HomePage() {
   return (
     <div className="mx-auto flex w-full min-w-0 max-w-8xl flex-1 flex-col px-4 pt-12">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8">
         <div className="flex flex-col items-center gap-8 text-center">
           <div className="flex flex-col items-center gap-6">
             <HeroTitle />

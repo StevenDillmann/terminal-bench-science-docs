@@ -122,6 +122,11 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://scholar.google.com/citations?user=XrwHdqMAAAAJ',
       },
       {
+        name: 'Zengji Tu',
+        affiliation: 'Peking University',
+        href: 'https://scholar.google.com/citations?user=1skhG50AAAAJ',
+      },
+      {
         name: 'Bo Chen',
         affiliation: 'The University of Hong Kong',
         href: 'https://scholar.google.com/citations?user=BWfZIIYAAAAJ',
@@ -165,11 +170,6 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         name: 'Haomiao Fang',
         affiliation: 'Imperial College London',
         href: 'https://orcid.org/0009-0008-9698-541X',
-      },
-      {
-        name: 'Zengji Tu',
-        affiliation: 'Peking University',
-        href: 'https://scholar.google.com/citations?user=1skhG50AAAAJ',
       },
       {
         name: 'Yicheng Rui',
@@ -439,6 +439,21 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         name: 'Lukas Picek',
         affiliation: 'MIT',
         href: 'https://picekl.github.io/research-web/',
+      },
+      {
+        name: 'Shir Bar',
+        affiliation: 'MIT',
+        href: 'https://shir3bar.github.io/',
+      },
+      {
+        name: 'Timm Haucke',
+        affiliation: 'MIT',
+        href: 'https://timm.haucke.xyz/',
+      },
+      {
+        name: 'Yoav Ram',
+        affiliation: 'Tel Aviv University',
+        href: 'https://www.yoavram.com/members/yoav-ram/',
       },
     ],
   },

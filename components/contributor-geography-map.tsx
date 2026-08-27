@@ -1,12 +1,20 @@
 import Image from 'next/image';
 
+import geographyStats from '../public/tb-science-contributor-geography.json';
+
+function chartSubtitle(contributorCount: number) {
+  return `${contributorCount} contributors across 22 countries from proposals, reviews, or pull requests`;
+}
+
 /**
  * Served as-is: the maps are lossless WebP with a transparent background, and
  * the image optimizer can re-encode them to JPEG, which drops the alpha channel.
  */
 export function ContributorGeographyMap() {
+  const subtitle = chartSubtitle(geographyStats.combined_unique_authors);
+
   return (
-    <figure className="my-6 w-full not-prose">
+    <figure className="mb-6 mt-2 w-full not-prose">
       <Image
         src="/tb-science-contributor-geography.webp"
         alt="World map showing the geographic density of Terminal-Bench-Science proposal and implementation authors using public profile locations and affiliations"
@@ -24,14 +32,7 @@ export function ContributorGeographyMap() {
         unoptimized
       />
       <figcaption className="mt-2 text-center text-sm text-muted-foreground">
-        <a
-          href="https://stevendillmann.github.io/tb-science-task-dashboard/?tab=proposals"
-          target="_blank"
-          rel="noreferrer"
-          className="underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Terminal-Bench-Science Contributor Geography
-        </a>
+        {subtitle}
       </figcaption>
     </figure>
   );

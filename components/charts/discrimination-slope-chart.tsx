@@ -22,6 +22,8 @@ const VALUE_FONT_SIZE = 11;
 const MIN_NAME_GAP = 16;
 const MIN_VALUE_GAP = 14;
 const HEADER_Y = 30;
+const CHART_TITLE = 'Terminal-Bench-Science vs. Terminal-Bench';
+const CHART_TITLE_MARGIN = 8;
 const TERMINAL_BENCH_URL = 'https://www.tbench.ai/';
 
 function formatPct(value: number): string {
@@ -158,6 +160,14 @@ export function DiscriminationSlopeChart() {
 
   return (
     <figure className="my-6 not-prose">
+      <div className="mb-1 flex items-center">
+        <p
+          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+          style={{ paddingLeft: CHART_TITLE_MARGIN }}
+        >
+          {CHART_TITLE}
+        </p>
+      </div>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"

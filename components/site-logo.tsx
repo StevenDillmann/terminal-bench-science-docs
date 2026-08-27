@@ -1,21 +1,24 @@
 import Image from 'next/image';
 
-export function SiteLogo() {
+import { cn } from '@/lib/utils';
+
+export function SiteLogo({ className }: { className?: string }) {
+  const imageClass = cn('w-auto', className ?? 'h-8');
   return (
-    <span className="flex h-8 items-center">
+    <span className={cn('flex items-center', className ?? 'h-8')}>
       <Image
         src="/tb-science-logo-light-bold.png"
         alt="Terminal-Bench-Science"
         width={2449}
         height={468}
-        className="h-8 w-auto dark:hidden"
+        className={cn(imageClass, 'dark:hidden')}
       />
       <Image
         src="/tb-science-logo-dark-bold.png"
         alt="Terminal-Bench-Science"
         width={2449}
         height={468}
-        className="hidden h-8 w-auto dark:block"
+        className={cn(imageClass, 'hidden dark:block')}
       />
     </span>
   );

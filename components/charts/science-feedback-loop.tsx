@@ -11,6 +11,8 @@ const LOOP_Y = ROW_Y + BOX_H + 44;
 const FONT_SIZE = 12;
 const LABEL_FONT_SIZE = 11;
 const LINE_HEIGHT = 16;
+const CHART_TITLE = 'Terminal-Bench-Science Feedback Loop';
+const CHART_TITLE_MARGIN = 8;
 
 type Rect = { x: number; y: number; w: number; h: number };
 
@@ -104,6 +106,14 @@ export function ScienceFeedbackLoop() {
 
   return (
     <figure id="science-feedback-loop" className="my-6 not-prose">
+      <div className="mb-1 flex items-center">
+        <p
+          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+          style={{ paddingLeft: CHART_TITLE_MARGIN }}
+        >
+          {CHART_TITLE}
+        </p>
+      </div>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"
@@ -121,7 +131,7 @@ export function ScienceFeedbackLoop() {
             markerHeight="7"
             orient="auto-start-reverse"
           >
-            <path d="M 0 0 L 10 5 L 0 10 z" className="fill-foreground" />
+            <path d="M 0 0 L 10 5 L 0 10 z" className="fill-muted-foreground" />
           </marker>
         </defs>
 
@@ -131,7 +141,7 @@ export function ScienceFeedbackLoop() {
           y1={rowMidY}
           x2={benchmark.x}
           y2={rowMidY}
-          className="stroke-foreground"
+          className="stroke-muted-foreground"
           strokeWidth={1.25}
           markerEnd="url(#science-feedback-arrow)"
         />
@@ -142,7 +152,7 @@ export function ScienceFeedbackLoop() {
           y1={rowMidY}
           x2={agents.x}
           y2={rowMidY}
-          className="stroke-foreground"
+          className="stroke-muted-foreground"
           strokeWidth={1.25}
           markerEnd="url(#science-feedback-arrow)"
         />
@@ -154,7 +164,7 @@ export function ScienceFeedbackLoop() {
               H ${centerX(community)}
               V ${rowBottom}`}
           fill="none"
-          className="stroke-foreground"
+          className="stroke-muted-foreground"
           strokeWidth={1.25}
           markerEnd="url(#science-feedback-arrow)"
         />

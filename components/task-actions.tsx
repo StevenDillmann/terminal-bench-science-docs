@@ -1,11 +1,17 @@
+'use client';
+
 import { ArrowRight02Icon, PlusSignIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { useQueryState } from 'nuqs';
+import type { CSSProperties } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
-  TERMINAL_BENCH_PACKAGE,
-  harborDatasetUrl,
-} from '@/lib/leaderboard';
+  domainTasksUrl,
+  getDomain,
+  parseHomeDomain,
+} from '@/lib/domain-context';
+import { cn } from '@/lib/utils';
 
 const secondaryActionClass = buttonVariants({
   variant: 'secondary',
@@ -13,13 +19,20 @@ const secondaryActionClass = buttonVariants({
 });
 
 export function TaskActions() {
+  const [domain] = useQueryState('domain', parseHomeDomain);
+  const accentColor = getDomain(domain).color;
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
       <a
-        href={harborDatasetUrl(TERMINAL_BENCH_PACKAGE)}
+        href={domainTasksUrl(domain)}
         target="_blank"
         rel="noreferrer"
-        className={secondaryActionClass}
+        style={{ '--view-tasks-accent': accentColor } as CSSProperties}
+        className={cn(
+          secondaryActionClass,
+          'transition-colors hover:!bg-[color-mix(in_srgb,var(--view-tasks-accent)_10%,transparent)] hover:!text-[var(--view-tasks-accent)] dark:hover:!bg-[color-mix(in_srgb,var(--view-tasks-accent)_15%,transparent)]',
+        )}
       >
         View the tasks
         <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={2} />

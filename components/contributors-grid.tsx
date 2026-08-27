@@ -74,12 +74,7 @@ export function ContributorsGrid() {
   return (
     <div className="-mx-4 grid w-auto grid-cols-2 gap-px overflow-hidden rounded-none bg-border py-px sm:grid-cols-3 md:mx-0 md:w-full md:grid-cols-4 md:rounded-xl md:p-px">
       {CONTRIBUTOR_GROUPS.map((group) => {
-        const contributors =
-          group.title === 'Task Contributors'
-            ? [...group.contributors].sort((a, b) =>
-                a.name.localeCompare(b.name),
-              )
-            : group.contributors;
+        const contributors = group.contributors;
         const count = contributors.length;
         const pad2 = rowPadCount(count, 2);
         const pad3 = rowPadCount(count, 3);

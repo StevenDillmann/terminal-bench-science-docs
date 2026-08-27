@@ -33,7 +33,7 @@ export function hashString(value: string): number {
 
 /** Color for a lab, keyed by the lab's domain (e.g. "anthropic.com"). */
 export function modelLabColor(lab: string): string {
-  if (lab.includes('anthropic.com')) return '#9e997b';
+  if (lab.includes('anthropic.com')) return 'var(--nature-stone)';
   if (lab.includes('openai.com')) {
     return 'color-mix(in oklch, var(--foreground) 88%, var(--background))';
   }

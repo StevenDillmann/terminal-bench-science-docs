@@ -14,7 +14,7 @@ import { RoadmapDiagram } from '@/components/charts/roadmap-diagram';
 import { ScienceFeedbackLoop } from '@/components/charts/science-feedback-loop';
 import { TaskDomainCoverage } from '@/components/charts/task-domain-coverage';
 import { TokensVsStepsChart } from '@/components/charts/tokens-vs-steps-chart';
-import { ContributorGeographyMap } from '@/components/contributor-geography-map';
+import { ContributionsSection } from '@/components/contributions-section';
 import { MdxPre } from '@/components/mdx-codeblock';
 
 export function getMDXComponents(components?: MDXComponents) {
@@ -30,10 +30,10 @@ export function getMDXComponents(components?: MDXComponents) {
     CostResolutionFrontier,
     TokenResolutionFrontier,
     TokensVsStepsChart,
+    ContributionsSection,
     RoadmapDiagram,
     ScienceFeedbackLoop,
     TaskDomainCoverage,
-    ContributorGeographyMap,
     ...components,
   } satisfies MDXComponents;
 }

@@ -11,7 +11,7 @@ const LABEL_WIDTH = 100;
 const BAR_GAP = 4;
 const VALUE_WIDTH = 52;
 const VALUE_GAP = 8;
-const MARGIN = { top: 8, right: 8, bottom: 28, left: 8 };
+const MARGIN = { top: 4, right: 8, bottom: 28, left: 8 };
 const BAR_HEIGHT = 22;
 /** Match the landing-page resolution-rate bars: always scale against 100%. */
 const MAX_ACCURACY = 100;
@@ -42,15 +42,15 @@ export function PassRateBarChart() {
 
   return (
     <figure className="my-6 w-full max-w-none not-prose">
-      <div className="mb-3 flex items-center justify-between gap-4">
+      <div className="mb-1 flex items-center justify-between gap-2">
         <p
           className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
           style={{ paddingLeft: MARGIN.left }}
         >
           Terminal-Bench-Science 0.1 Leaderboard
         </p>
-        <div className="shrink-0">
-          <SiteLogo />
+        <div className="mr-5 mt-1.5 shrink-0">
+          <SiteLogo className="h-7" />
         </div>
       </div>
       <div className="w-full overflow-x-auto">
@@ -58,7 +58,7 @@ export function PassRateBarChart() {
           viewBox={`0 0 ${width} ${height}`}
           width="100%"
           role="img"
-          aria-label="Resolution rates on Terminal-Bench-Science 0.1"
+          aria-label="Resolution rates across 70 scientific workflow tasks on Terminal-Bench-Science 0.1"
           className="mx-auto block w-full text-foreground"
         >
           {TICKS.map((tick) => {
@@ -154,14 +154,14 @@ export function PassRateBarChart() {
           })}
         </svg>
       </div>
-      <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+      <figcaption className="mt-1 text-center text-sm text-muted-foreground">
         <a
           href={leaderboardUrl}
           target="_blank"
           rel="noreferrer"
           className="underline-offset-4 hover:text-foreground hover:underline"
         >
-          Resolution Rates on Terminal-Bench-Science 0.1
+          Resolution rates across 70 scientific workflow tasks on Terminal-Bench-Science 0.1
         </a>
       </figcaption>
     </figure>

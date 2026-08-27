@@ -2,6 +2,7 @@ import {
   ParetoScatterChart,
   type ParetoDatum,
 } from '@/components/charts/pareto-scatter-chart';
+import { computeParetoFrontierIds } from '@/lib/pareto-frontier';
 
 type FrontierPoint = Omit<
   ParetoDatum,
@@ -9,11 +10,12 @@ type FrontierPoint = Omit<
 > & {
   cost: number;
   tokens: number;
-  charts?: ('cost' | 'tokens')[];
   /** Per-chart label side, to dodge neighbouring labels. */
   labelSide?: Partial<Record<'cost' | 'tokens', 'left' | 'right'>>;
   /** Per-chart vertical label nudge in px (positive moves it down). */
   labelOffsetY?: Partial<Record<'cost' | 'tokens', number>>;
+  /** Per-chart label visibility (point still renders; tooltip on hover). */
+  hideLabel?: Partial<Record<'cost' | 'tokens', boolean>>;
 };
 
 const BASE_DATA: FrontierPoint[] = [
@@ -60,6 +62,7 @@ const BASE_DATA: FrontierPoint[] = [
     releaseDate: null,
     y: 7.1428571429,
     accuracyStderr: null,
+    hideLabel: { cost: true },
     labelOffsetY: { tokens: 14 },
   },
   {
@@ -128,13 +131,13 @@ const BASE_DATA: FrontierPoint[] = [
       full: 'Kimi K3 (Claude Code)',
     },
     reasoningEffort: null,
-    cost: 2539.665996,
+    cost: 1523.7995976,
     tokens: 3_191_602_969,
     releaseDate: null,
     y: 7.1428571429,
     accuracyStderr: null,
-    charts: ['tokens'],
-    labelOffsetY: { tokens: -16 },
+    labelSide: { cost: 'right' },
+    labelOffsetY: { cost: 10, tokens: -16 },
   },
   {
     id: 'glm-5.3-claude-code',
@@ -144,56 +147,63 @@ const BASE_DATA: FrontierPoint[] = [
       full: 'GLM 5.3 (Claude Code)',
     },
     reasoningEffort: null,
-    cost: 6802.566162,
+    cost: 2733.16185912,
     tokens: 8_486_097_200,
     releaseDate: null,
     y: 8.0952380952,
     accuracyStderr: null,
+    hideLabel: { cost: true },
   },
 ];
 
-function frontierData(
-  xAxis: 'cost' | 'tokens',
-  frontierIds: readonly string[],
-): ParetoDatum[] {
-  const frontier = new Set(frontierIds);
-  return BASE_DATA.filter(
-    (point) => !point.charts || point.charts.includes(xAxis),
-  )
-    .map(({ charts: _charts, labelSide, labelOffsetY, ...point }) => ({
+function buildFrontierData(xAxis: 'cost' | 'tokens'): ParetoDatum[] {
+  const points = BASE_DATA.map(({ labelSide, labelOffsetY, hideLabel, ...point }) => ({
+    ...point,
+    x: point[xAxis],
+    onFrontier: false,
+    labelSide: labelSide?.[xAxis],
+    labelOffsetY: labelOffsetY?.[xAxis],
+    showLabel: hideLabel?.[xAxis] ? false : undefined,
+  }));
+  const frontier = computeParetoFrontierIds(points, 'min', 'max');
+  return points
+    .map((point) => ({
       ...point,
-      x: point[xAxis],
       onFrontier: frontier.has(point.id),
-      labelSide: labelSide?.[xAxis],
-      labelOffsetY: labelOffsetY?.[xAxis],
     }))
     .sort((a, b) => a.x - b.x);
 }
 
-const COST_DATA = frontierData('cost', [
-  'gpt-5.6-luna-codex',
-  'gpt-5.6-terra-codex',
-  'gpt-5.6-sol-codex',
-  'opus-5-claude-code',
-]);
+const COST_DATA = buildFrontierData('cost');
+const TOKEN_DATA = buildFrontierData('tokens');
 
-const TOKEN_DATA = frontierData('tokens', [
-  'kimi-k3-claude-code',
-  'fable-5-claude-code',
-  'opus-5-claude-code',
-]);
+const COST_FRONTIER_TITLE =
+  'Terminal-Bench-Science 0.1 Cost vs. Resolution Rate';
+const TOKEN_FRONTIER_TITLE =
+  'Terminal-Bench-Science 0.1 Tokens vs. Resolution Rate';
+const CHART_TITLE_MARGIN = 8;
 
 function ResolutionFrontier({
+  title,
   data,
   xAxis,
   caption,
 }: {
+  title: string;
   data: ParetoDatum[];
   xAxis: 'cost' | 'tokens';
   caption: string;
 }) {
   return (
-    <figure className="my-6 w-full not-prose">
+    <figure className="my-6 w-full max-w-none not-prose">
+      <div className="mb-1 flex items-center">
+        <p
+          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+          style={{ paddingLeft: CHART_TITLE_MARGIN }}
+        >
+          {title}
+        </p>
+      </div>
       <ParetoScatterChart
         data={data}
         xAxisId={xAxis}
@@ -203,7 +213,7 @@ function ResolutionFrontier({
         height={420}
         showNonFrontierLabels
       />
-      <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+      <figcaption className="mt-1 text-center text-sm text-muted-foreground">
         <a
           href={`/?view=pareto&x=${xAxis}`}
           className="underline-offset-4 hover:text-foreground hover:underline"
@@ -218,9 +228,10 @@ function ResolutionFrontier({
 export function CostResolutionFrontier() {
   return (
     <ResolutionFrontier
+      title={COST_FRONTIER_TITLE}
       data={COST_DATA}
       xAxis="cost"
-      caption="Terminal-Bench-Science 0.1 Cost vs. Resolution Rate Pareto Frontier"
+      caption="Pareto frontier of cost and resolution rate across evaluated systems"
     />
   );
 }
@@ -228,9 +239,10 @@ export function CostResolutionFrontier() {
 export function TokenResolutionFrontier() {
   return (
     <ResolutionFrontier
+      title={TOKEN_FRONTIER_TITLE}
       data={TOKEN_DATA}
       xAxis="tokens"
-      caption="Terminal-Bench-Science 0.1 Tokens vs. Resolution Rate Pareto Frontier"
+      caption="Pareto frontier of token usage and resolution rate across evaluated systems"
     />
   );
 }

@@ -18,6 +18,7 @@ import {
 } from '@/components/charts/model-colors';
 import {
   ALL_DOMAIN_RADAR_AXES,
+  DOMAIN_RADAR_SPOKE_AXES,
   type DomainRadarAxis,
   type DomainId,
   getDomain,
@@ -256,6 +257,7 @@ function ScoreLabels({
 type DomainRadarChartProps = {
   data: DomainRadarDatum[];
   axes: readonly DomainRadarAxis[];
+  spokeAxes?: readonly DomainRadarAxis[];
   className?: string;
   id?: string;
   defaultSelectedIds?: readonly string[];
@@ -267,6 +269,7 @@ type DomainRadarChartProps = {
 export function DomainRadarChart({
   data,
   axes,
+  spokeAxes = DOMAIN_RADAR_SPOKE_AXES,
   className,
   id,
   defaultSelectedIds = [],
@@ -284,7 +287,7 @@ export function DomainRadarChart({
   const labeledData = data.filter(
     (datum) => selectedIds.includes(datum.id) || datum.id === activeId,
   );
-  const scale = buildRadarScale(data, axes);
+  const scale = buildRadarScale(data, spokeAxes);
   const sortedTableData = useMemo(() => {
     if (!sort) return data;
     return [...data].sort((left, right) => {
@@ -541,25 +544,25 @@ export function DomainRadarChart({
             setActiveId(null);
           }}
         >
-          <title>Domain radar chart</title>
+          <title>Radar chart</title>
         {scale.steps.map((step) => (
           <polygon
             key={step}
-            points={gridPoints(step, scale.maximum, axes)}
+            points={gridPoints(step, scale.maximum, spokeAxes)}
             fill="none"
             className="stroke-border"
             strokeWidth={step === scale.maximum ? 1.5 : 1}
           />
         ))}
-        {axes.map((axis, index) => {
-          const end = pointAt(RADIUS, index, axes.length);
+        {spokeAxes.map((axis, index) => {
+          const end = pointAt(RADIUS, index, spokeAxes.length);
           const horizontal = end.x - CENTER;
           const vertical = end.y - CENTER;
           const sideLabel = Math.abs(horizontal) > Math.abs(vertical);
           const label = pointAt(
             RADIUS + (sideLabel ? 58 : vertical < 0 ? 30 : 38),
             index,
-            axes.length,
+            spokeAxes.length,
           );
           return (
             <g key={axis.id}>
@@ -609,7 +612,7 @@ export function DomainRadarChart({
           const isActive = activeId === datum.id || selectedColor != null;
           const isDimmed =
             (activeId != null || selectedIds.length > 0) && !isActive;
-          const points = profilePoints(datum.scores, scale.maximum, axes);
+          const points = profilePoints(datum.scores, scale.maximum, spokeAxes);
           return (
             <g key={datum.id}>
               <polygon
@@ -621,7 +624,7 @@ export function DomainRadarChart({
                 pointerEvents="stroke"
                 className="cursor-pointer outline-none"
                 tabIndex={0}
-                aria-label={`${datum.label.full}: ${axes.map(
+                aria-label={`${datum.label.full}: ${spokeAxes.map(
                   (axis) => `${axis.label} ${datum.scores[axis.id]}`,
                 ).join(', ')}`}
                 onMouseEnter={() => setActiveId(datum.id)}
@@ -653,7 +656,7 @@ export function DomainRadarChart({
             key={`scores-${datum.id}`}
             datum={datum}
             color={datum.color}
-            axes={axes}
+            axes={spokeAxes}
             maximum={scale.maximum}
           />
         ))}

@@ -570,8 +570,34 @@ def main() -> None:
         "unique_location_strings": unique_location_strings,
         "mapped_authors": len(on_land),
     }
+    author_records = []
+    for point in sorted(
+        on_land,
+        key=lambda item: (
+            str(item.get("name") or item.get("login") or "").casefold(),
+            str(item.get("display_name") or ""),
+        ),
+    ):
+        name = str(point.get("name") or point.get("login") or "").strip()
+        if not name:
+            continue
+        display_name = str(point.get("display_name") or "").strip()
+        country = display_name.split(",")[-1].strip() if display_name else ""
+        author_records.append(
+            {
+                "name": name,
+                "login": str(point.get("login") or "").strip() or None,
+                "location": str(point.get("geocoding_query") or point.get("location") or "").strip()
+                or None,
+                "place": display_name or None,
+                "country": country or None,
+            }
+        )
     (OUTPUT_DIR / "tb-science-contributor-geography.json").write_text(
         json.dumps(stats, indent=2) + "\n"
+    )
+    (OUTPUT_DIR / "tb-science-contributor-geography-authors.json").write_text(
+        json.dumps(author_records, indent=2) + "\n"
     )
     print(json.dumps(stats, indent=2))
 

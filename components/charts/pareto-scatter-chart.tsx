@@ -32,6 +32,8 @@ export type ParetoDatum = {
   labelSide?: 'left' | 'right';
   /** Vertical nudge for the label in px (positive moves it down). */
   labelOffsetY?: number;
+  /** When false, render the point but hide its model/agent label. */
+  showLabel?: boolean;
 };
 
 const MIN_WIDTH = 480;
@@ -459,7 +461,8 @@ export function ParetoScatterChart({
                 }
                 style={{ pointerEvents: 'none' }}
               />
-              {datum.onFrontier || showNonFrontierLabels ? (
+              {(datum.onFrontier || showNonFrontierLabels) &&
+              datum.showLabel !== false ? (
                 <text
                   x={labelX}
                   y={(agentText ? cy - 2 : cy + 4) + (datum.labelOffsetY ?? 0)}
@@ -553,12 +556,14 @@ export function ParetoScatterChart({
                 {active.agent ? (
                   <p className="opacity-70">{active.agent}</p>
                 ) : null}
-                <p className="opacity-70">{active.reasoningEffort ?? '—'}</p>
+                {active.reasoningEffort ? (
+                  <p className="opacity-70">{active.reasoningEffort}</p>
+                ) : null}
               </div>
               <div className="shrink-0 text-right tabular-nums opacity-70">
                 <p>{active.cost}</p>
                 <p>{active.tokens}</p>
-                <p>{active.releaseDate}</p>
+                {active.releaseDate !== '—' ? <p>{active.releaseDate}</p> : null}
               </div>
             </div>
           ) : null}

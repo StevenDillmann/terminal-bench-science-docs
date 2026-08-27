@@ -134,21 +134,8 @@
   background-color: var(--sidebar) !important;
 }
 
-/* Citation BibTeX block: brand colours instead of the GitHub Shiki theme.
-   Inline --shiki-* vars beat stylesheet vars, so match tokens by their
-   original colour and set `color` directly. */
-.bibtex-block span[style*="--shiki-light:#D73A49"], /* @software */
-.bibtex-block span[style*="--shiki-light:#005CC5"] /* field names */ {
-  color: #9e997b !important;
-}
-.bibtex-block span[style*="--shiki-light:#D73A49"] /* @software */ {
-  font-weight: 700;
-}
-.bibtex-block span[style*="--shiki-light:#6F42C1"] /* citation key */ {
-  color: #038f99 !important;
-}
-.bibtex-block span[style*="--shiki-light:#032F62"], /* braces */
-.bibtex-block span[style*="--shiki-light:#24292E"] /* values, = and , */ {
+/* Citation BibTeX block: monochrome foreground (light/dark). */
+.bibtex-block span {
   color: var(--foreground) !important;
 }
 
@@ -176,6 +163,9 @@ html > body[data-scroll-locked] {
 }
 
 :root {
+  --nature-stone-4: #9e997b;
+  --nature-stone-5: #7d785b;
+  --nature-stone: var(--nature-stone-5);
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -211,6 +201,7 @@ html > body[data-scroll-locked] {
 }
 
 .dark {
+  --nature-stone: var(--nature-stone-4);
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);

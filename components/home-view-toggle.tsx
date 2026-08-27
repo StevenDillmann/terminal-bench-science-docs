@@ -21,7 +21,7 @@ export type HomeViewId = (typeof VIEWS)[number];
 const VIEW_LABELS: Record<HomeViewId, string> = {
   leaderboard: 'LEADERBOARD',
   pareto: 'PARETO',
-  domains: 'DOMAIN RADAR',
+  domains: 'RADAR',
   matrix: 'MATRIX',
 };
 

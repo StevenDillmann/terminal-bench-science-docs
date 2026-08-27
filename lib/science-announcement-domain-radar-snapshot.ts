@@ -17,7 +17,7 @@ export type AnnouncementDomainRadarDatum = {
 };
 
 /**
- * Domain resolution rates for the announcement radar (Claude Opus 5 vs GPT-5.6 Sol).
+ * Domain resolution rates for the announcement radar (Opus 5, GPT-5.6 Sol, Grok 4.6).
  *
  * Exported from Harbor Hub on August 26, 2026.
  */
@@ -55,6 +55,23 @@ export const SCIENCE_ANNOUNCEMENT_DOMAIN_RADAR_SNAPSHOT: AnnouncementDomainRadar
         engineering: 14.8,
       },
       color: modelLabColor(labFromModelName('GPT-5.6 Sol')),
+      strokeDasharray: MODEL_STROKE_PATTERNS[0],
+    },
+    {
+      id: 'grok-4.6-grok-build',
+      label: {
+        model: 'Grok 4.6',
+        agent: 'Grok Build',
+        full: 'Grok 4.6 (Grok Build)',
+      },
+      scores: {
+        life: 7,
+        physical: 5.9,
+        earth: 4.2,
+        mathematical: 5.9,
+        engineering: 14.8,
+      },
+      color: modelLabColor(labFromModelName('Grok 4.6')),
       strokeDasharray: MODEL_STROKE_PATTERNS[0],
     },
   ];

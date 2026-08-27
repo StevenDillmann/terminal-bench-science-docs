@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import type { AnnouncementDomainRadarDatum } from '@/lib/science-announcement-domain-radar-snapshot';
-import { ALL_DOMAIN_RADAR_AXES } from '@/lib/domain-radar-axes';
+import { DOMAIN_RADAR_SPOKE_AXES } from '@/lib/domain-radar-axes';
 import { SCIENCE_ANNOUNCEMENT_DOMAIN_RADAR_SNAPSHOT } from '@/lib/science-announcement-domain-radar-snapshot';
 
 const WIDTH = 520;
@@ -25,7 +25,7 @@ function pointsToString(points: Point[]): string {
 }
 
 function buildRadarScale(data: AnnouncementDomainRadarDatum[]) {
-  const axes = ALL_DOMAIN_RADAR_AXES;
+  const axes = DOMAIN_RADAR_SPOKE_AXES;
   const highestScore = Math.max(
     10,
     ...data.flatMap((datum) => axes.map((axis) => datum.scores[axis.id] ?? 0)),
@@ -45,7 +45,7 @@ function buildRadarScale(data: AnnouncementDomainRadarDatum[]) {
 }
 
 function gridPoints(value: number, maximum: number): string {
-  const axes = ALL_DOMAIN_RADAR_AXES;
+  const axes = DOMAIN_RADAR_SPOKE_AXES;
   return pointsToString(
     axes.map((_, index) =>
       pointAt((RADIUS * value) / maximum, index, axes.length),
@@ -57,7 +57,7 @@ function profilePoints(
   scores: AnnouncementDomainRadarDatum['scores'],
   maximum: number,
 ): string {
-  const axes = ALL_DOMAIN_RADAR_AXES;
+  const axes = DOMAIN_RADAR_SPOKE_AXES;
   return pointsToString(
     axes.map((axis, index) =>
       pointAt((RADIUS * scores[axis.id]!) / maximum, index, axes.length),
@@ -86,22 +86,35 @@ function scoreLabelOffset(
   };
 }
 
+const CHART_TITLE = 'Terminal-Bench-Science 0.1 Resolution Rates by Domain';
+const CHART_CAPTION =
+  'Domain resolution rates: Opus 5, GPT-5.6 Sol, and Grok 4.6';
+const CHART_TITLE_MARGIN = 8;
+
 export function DomainRadarAnnouncement() {
   const data = SCIENCE_ANNOUNCEMENT_DOMAIN_RADAR_SNAPSHOT;
-  const axes = ALL_DOMAIN_RADAR_AXES;
+  const axes = DOMAIN_RADAR_SPOKE_AXES;
   const scale = buildRadarScale(data);
 
   return (
-    <figure className="my-6 not-prose">
+    <figure className="my-6 w-full max-w-none not-prose">
+      <div className="mb-1 flex items-center">
+        <p
+          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+          style={{ paddingLeft: CHART_TITLE_MARGIN }}
+        >
+          {CHART_TITLE}
+        </p>
+      </div>
       <div className="mx-auto w-full max-w-md">
         <svg
           viewBox={VIEWBOX}
           width="100%"
           role="img"
-          aria-label="Domain resolution rates for Opus 5 and GPT-5.6 Sol"
+          aria-label="Domain resolution rates for Opus 5, GPT-5.6 Sol, and Grok 4.6"
           className="mx-auto block text-foreground"
         >
-          <title>Domain resolution rates: Claude Opus 5 vs GPT-5.6 Sol</title>
+          <title>Domain resolution rates: Opus 5, GPT-5.6 Sol, and Grok 4.6</title>
 
           {scale.steps.map((step) => (
             <polygon
@@ -221,12 +234,12 @@ export function DomainRadarAnnouncement() {
         </ul>
       </div>
 
-      <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+      <figcaption className="mt-1 text-center text-sm text-muted-foreground">
         <Link
           href="/?view=domains"
           className="underline-offset-4 hover:text-foreground hover:underline"
         >
-          Terminal-Bench-Science 0.1 Domain Resolution Rates: Claude Opus 5 vs GPT-5.6 Sol
+          {CHART_CAPTION}
         </Link>
       </figcaption>
     </figure>

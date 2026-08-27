@@ -2,10 +2,11 @@ import { createParser } from 'nuqs';
 
 import {
   ALL_DOMAIN_RADAR_AXES,
+  DOMAIN_RADAR_SPOKE_AXES,
   type DomainRadarAxis,
 } from '@/lib/domain-radar-axes';
 
-export { ALL_DOMAIN_RADAR_AXES, type DomainRadarAxis };
+export { ALL_DOMAIN_RADAR_AXES, DOMAIN_RADAR_SPOKE_AXES, type DomainRadarAxis };
 
 export const DOMAIN_IDS = [
   'all',
@@ -46,6 +47,22 @@ export const DOMAINS: readonly DomainDefinition[] = [
 
 export function getDomain(domain: DomainId): DomainDefinition {
   return DOMAINS.find((entry) => entry.id === domain) ?? DOMAINS[0]!;
+}
+
+const GITHUB_TASKS_BASE =
+  'https://github.com/harbor-framework/terminal-bench-science/tree/main/tasks';
+
+const DOMAIN_TASK_PATHS: Record<DomainId, string> = {
+  all: GITHUB_TASKS_BASE,
+  life: `${GITHUB_TASKS_BASE}/life-sciences`,
+  physical: `${GITHUB_TASKS_BASE}/physical-sciences`,
+  earth: `${GITHUB_TASKS_BASE}/earth-sciences`,
+  mathematical: `${GITHUB_TASKS_BASE}/mathematical-sciences`,
+  engineering: `${GITHUB_TASKS_BASE}/engineering-sciences`,
+};
+
+export function domainTasksUrl(domain: DomainId): string {
+  return DOMAIN_TASK_PATHS[domain];
 }
 
 export function domainExportTitle(domain: DomainId, view: string): string {
