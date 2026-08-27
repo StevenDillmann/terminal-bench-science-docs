@@ -1,17 +1,20 @@
 import type { ReactNode } from 'react';
 
 import { SiteLogo } from '@/components/site-logo';
+import { cn } from '@/lib/utils';
 
 export function ViewHeader({
   title,
   subtitle,
   detail,
   children,
+  showLogo = false,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   detail?: ReactNode;
   children?: ReactNode;
+  showLogo?: boolean;
 }) {
   return (
     <header className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5">
@@ -41,7 +44,10 @@ export function ViewHeader({
         </div>
         <span
           data-export-logo
-          className="hidden shrink-0 items-center"
+          className={cn(
+            'shrink-0 items-center',
+            showLogo ? 'flex' : 'hidden',
+          )}
         >
           <SiteLogo />
         </span>

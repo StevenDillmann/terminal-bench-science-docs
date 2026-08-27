@@ -71,10 +71,34 @@ import { cn } from '@/lib/utils';
 const SORTABLE_COLUMN_IDS = new Set([
   'accuracy',
   'release_date',
+  'model_release_date',
   'total_tokens',
   'total_cost_usd',
 ]);
 const TABLE_IMAGE_ID = 'leaderboard-table-image';
+
+function isReleaseDateColumn(columnId: string): boolean {
+  return columnId === 'release_date' || columnId === 'model_release_date';
+}
+
+function isSortableColumn(column: LeaderboardColumn): boolean {
+  if (column.enable_sorting === true) return true;
+  if (column.enable_sorting === false) return false;
+  return SORTABLE_COLUMN_IDS.has(column.id);
+}
+
+function compareDateValues(left: unknown, right: unknown): number {
+  const toMs = (value: unknown) => {
+    if (typeof value !== 'string' || !value) return Number.NaN;
+    return Date.parse(value);
+  };
+  const leftMs = toMs(left);
+  const rightMs = toMs(right);
+  if (Number.isNaN(leftMs) && Number.isNaN(rightMs)) return 0;
+  if (Number.isNaN(leftMs)) return 1;
+  if (Number.isNaN(rightMs)) return -1;
+  return leftMs - rightMs;
+}
 
 function alignClass(align?: LeaderboardColumn['align']) {
   switch (align) {
@@ -201,10 +225,12 @@ function SortableHeader({
   column,
   label,
   align,
+  accentColor,
 }: {
   column: Column<LeaderboardRow, unknown>;
   label: string;
   align?: LeaderboardColumn['align'];
+  accentColor: string;
 }) {
   const sorted = column.getIsSorted();
   const icon =
@@ -228,10 +254,8 @@ function SortableHeader({
       <HugeiconsIcon
         icon={icon}
         strokeWidth={2}
-        className={cn(
-          'size-3.5',
-          sorted ? 'text-[#038f99]' : 'text-muted-foreground',
-        )}
+        className={cn('size-3.5', !sorted && 'text-muted-foreground')}
+        style={sorted ? { color: accentColor } : undefined}
       />
     </button>
   );
@@ -311,6 +335,7 @@ function formatExportCell(
     'total_cost_usd',
     'total_tokens',
     'release_date',
+    'model_release_date',
   ]).has(column.id);
   const accessor =
     useRawValue || !column.display_accessor
@@ -318,11 +343,11 @@ function formatExportCell(
       : column.display_accessor;
   const value = getAccessorValue(row, accessor);
 
-  if (column.id === 'release_date') return formatExportDate(value);
+  if (isReleaseDateColumn(column.id)) return formatExportDate(value);
 
   return formatLeaderboardCell(
     value,
-    useRawValue && column.id !== 'release_date'
+    useRawValue && !isReleaseDateColumn(column.id)
       ? 'number'
       : (column.display_type ?? column.type),
   );
@@ -594,7 +619,7 @@ function buildColumns(
       const columnAlign =
         column.id === 'accuracy' ? 'left' : column.align;
       const align = alignClass(columnAlign);
-      const sortable = SORTABLE_COLUMN_IDS.has(column.id);
+      const sortable = isSortableColumn(column);
       const headerLabel = displayColumnHeader(column);
       return {
         id: column.id,
@@ -605,6 +630,7 @@ function buildColumns(
                 column={tableColumn}
                 label={headerLabel}
                 align={columnAlign}
+                accentColor={accentColor}
               />
             )
           : headerLabel,
@@ -646,6 +672,12 @@ function buildColumns(
           return <LeaderboardCell value={value} type={displayType} />;
         },
         enableSorting: sortable,
+        ...(column.type === 'date'
+          ? {
+              sortingFn: (rowA, rowB, columnId) =>
+                compareDateValues(rowA.getValue(columnId), rowB.getValue(columnId)),
+            }
+          : {}),
         meta: {
           headerClassName: align,
           cellClassName: cn(

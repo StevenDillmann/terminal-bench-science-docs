@@ -137,11 +137,12 @@
 /* Citation BibTeX block: brand colours instead of the GitHub Shiki theme.
    Inline --shiki-* vars beat stylesheet vars, so match tokens by their
    original colour and set `color` directly. */
-.bibtex-block span[style*="--shiki-light:#D73A49"] /* @software */ {
-  color: #038f99 !important;
-}
+.bibtex-block span[style*="--shiki-light:#D73A49"], /* @software */
 .bibtex-block span[style*="--shiki-light:#005CC5"] /* field names */ {
   color: #9e997b !important;
+}
+.bibtex-block span[style*="--shiki-light:#D73A49"] /* @software */ {
+  font-weight: 700;
 }
 .bibtex-block span[style*="--shiki-light:#6F42C1"] /* citation key */ {
   color: #038f99 !important;

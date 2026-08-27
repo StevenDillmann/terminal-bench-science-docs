@@ -10,12 +10,16 @@ export function baseOptions(): BaseLayoutProps {
     },
     links: [
       {
-        text: 'RUN TERMINAL-BENCH-SCIENCE',
-        url: '/run',
+        text: 'LEADERBOARD',
+        url: '/',
       },
       {
         text: 'ANNOUNCEMENT',
         url: '/announcement',
+      },
+      {
+        text: 'RUN',
+        url: '/run',
       },
       {
         text: 'CONTRIBUTORS',

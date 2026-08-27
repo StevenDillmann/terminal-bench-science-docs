@@ -4,15 +4,20 @@ import {
   harborLeaderboardUrl,
 } from '@/lib/leaderboard';
 import { SCIENCE_ANNOUNCEMENT_LEADERBOARD_SNAPSHOT } from '@/lib/science-announcement-leaderboard-snapshot';
+import { SiteLogo } from '@/components/site-logo';
 
 const ROW_HEIGHT = 38;
-const LABEL_WIDTH = 150;
+const LABEL_WIDTH = 100;
+const BAR_GAP = 4;
 const VALUE_WIDTH = 52;
+const VALUE_GAP = 8;
 const MARGIN = { top: 8, right: 8, bottom: 28, left: 8 };
 const BAR_HEIGHT = 22;
 /** Match the landing-page resolution-rate bars: always scale against 100%. */
 const MAX_ACCURACY = 100;
 const TICKS = [0, 25, 50, 75, 100] as const;
+const Z_95 = 1.96;
+const BAR_COLOR = '#038f99';
 
 function formatPassRate(value: number): string {
   return `${value.toLocaleString('en-US', {
@@ -30,11 +35,24 @@ export function PassRateBarChart() {
     (row) => row.status === 'display',
   ).sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999));
   const width = 760;
-  const plotWidth = width - MARGIN.left - MARGIN.right - LABEL_WIDTH - VALUE_WIDTH;
+  const barStartX = MARGIN.left + LABEL_WIDTH + BAR_GAP;
+  const plotWidth =
+    width - barStartX - VALUE_GAP - VALUE_WIDTH - MARGIN.right;
   const height = MARGIN.top + MARGIN.bottom + rows.length * ROW_HEIGHT;
 
   return (
     <figure className="my-6 w-full max-w-none not-prose">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <p
+          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+          style={{ paddingLeft: MARGIN.left }}
+        >
+          Terminal-Bench-Science 0.1 Leaderboard
+        </p>
+        <div className="shrink-0">
+          <SiteLogo />
+        </div>
+      </div>
       <div className="w-full overflow-x-auto">
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -44,7 +62,7 @@ export function PassRateBarChart() {
           className="mx-auto block w-full text-foreground"
         >
           {TICKS.map((tick) => {
-            const x = MARGIN.left + LABEL_WIDTH + (tick / MAX_ACCURACY) * plotWidth;
+            const x = barStartX + (tick / MAX_ACCURACY) * plotWidth;
             return (
               <g key={tick}>
                 <line
@@ -72,20 +90,24 @@ export function PassRateBarChart() {
             const y = MARGIN.top + index * ROW_HEIGHT;
             const barY = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
             const barWidth = (row.accuracy / MAX_ACCURACY) * plotWidth;
-            const labelX = MARGIN.left + LABEL_WIDTH - 12;
+            const ciHalf = Z_95 * row.accuracyStderr;
+            const ciWidth =
+              (Math.max(0, Math.min(MAX_ACCURACY, row.accuracy + ciHalf) - row.accuracy) /
+                MAX_ACCURACY) *
+              plotWidth;
 
             return (
               <g key={`${row.rank}-${row.model}-${row.agent}`}>
                 <text
-                  x={labelX}
+                  x={MARGIN.left}
                   y={y + 14}
-                  textAnchor="end"
+                  textAnchor="start"
                   className="fill-foreground"
                   fontSize={12}
                 >
-                  <tspan x={labelX}>{row.model}</tspan>
+                  <tspan x={MARGIN.left}>{row.model}</tspan>
                   <tspan
-                    x={labelX}
+                    x={MARGIN.left}
                     dy={13}
                     className="fill-muted-foreground"
                     fontSize={10}
@@ -94,21 +116,32 @@ export function PassRateBarChart() {
                   </tspan>
                 </text>
                 <rect
-                  x={MARGIN.left + LABEL_WIDTH}
+                  x={barStartX}
                   y={barY}
                   width={plotWidth}
                   height={BAR_HEIGHT}
                   className="fill-muted"
                 />
                 <rect
-                  x={MARGIN.left + LABEL_WIDTH}
+                  x={barStartX}
                   y={barY}
                   width={Math.max(barWidth, 1)}
                   height={BAR_HEIGHT}
-                  className="fill-[#038f99]/75"
+                  fill={BAR_COLOR}
                 />
+                {ciWidth > 0 ? (
+                  <rect
+                    x={barStartX + barWidth}
+                    y={barY}
+                    width={ciWidth}
+                    height={BAR_HEIGHT}
+                    style={{
+                      fill: `color-mix(in srgb, ${BAR_COLOR} 35%, transparent)`,
+                    }}
+                  />
+                ) : null}
                 <text
-                  x={MARGIN.left + LABEL_WIDTH + plotWidth + 8}
+                  x={barStartX + plotWidth + VALUE_GAP}
                   y={y + ROW_HEIGHT / 2}
                   dominantBaseline="central"
                   className="fill-muted-foreground"

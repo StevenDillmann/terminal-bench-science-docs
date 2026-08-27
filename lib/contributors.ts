@@ -129,7 +129,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       {
         name: 'Denali Archer',
         affiliation: 'University of Cambridge',
-        github: 'denali_52758',
+        github: 'daa46',
       },
       {
         name: 'Joseph Janssen',
@@ -234,7 +234,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       {
         name: 'Haoxuan Zeng',
         affiliation: 'University of Michigan',
-        href: 'https://scholar.google.com/citations?user=z14M_5kAAAAJ',
+        href: 'https://scholar.google.com/citations?user=mxwqfcsAAAAJ&hl=en',
       },
       {
         name: 'James Kermode',
@@ -461,6 +461,11 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://scholar.google.com/citations?user=dLwY-1YAAAAJ',
       },
       {
+        name: 'Benjamin Feuer',
+        affiliation: 'Stanford University, OpenAthena',
+        href: 'https://scholar.google.com/citations?user=VPXu100AAAAJ&hl=en',
+      },
+      {
         name: 'Mike A. Merrill',
         affiliation: 'Anthropic',
         href: 'https://scholar.google.com/citations?user=UtBcznsAAAAJ',
@@ -517,7 +522,7 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
       },
       {
         name: 'J. Nathan Kutz',
-        affiliation: 'University of Washington',
+        affiliation: 'University of Washington, Autodesk Research',
         href: 'https://scholar.google.com/citations?user=kfT42KEAAAAJ',
       },
       {
