@@ -50,8 +50,18 @@ export function createExportClone(source: HTMLElement): {
   clone.style.margin = '0';
   clone.style.pointerEvents = 'none';
 
+  // A header icon flagged for export replaces the logo; otherwise drop it.
+  const keepIcon = clone.querySelector('[data-export-icon-slot][data-export-icon]');
+  for (const slot of clone.querySelectorAll<HTMLElement>('[data-export-icon-slot]')) {
+    if (!slot.hasAttribute('data-export-icon')) slot.remove();
+  }
+
   const useDarkLogo = document.documentElement.classList.contains('dark');
   for (const logo of clone.querySelectorAll<HTMLElement>('[data-export-logo]')) {
+    if (keepIcon) {
+      logo.remove();
+      continue;
+    }
     logo.style.display = 'flex';
     const image = document.createElement('img');
     image.src = useDarkLogo
@@ -78,6 +88,10 @@ export function createExportClone(source: HTMLElement): {
   }
   for (const ignored of clone.querySelectorAll('[data-export-ignore]')) {
     ignored.remove();
+  }
+  // Links rendered as plain text in exports (no underline).
+  for (const plain of clone.querySelectorAll<HTMLElement>('[data-export-plain]')) {
+    plain.style.textDecoration = 'none';
   }
 
   host.appendChild(clone);

@@ -57,9 +57,18 @@ export type LeaderboardMatrixTask = {
   domain: Exclude<DomainId, 'all'>;
 };
 
+export type LeaderboardTrialLink = {
+  id: string;
+  /** Harbor job the trial ran in; needed to build the Hub trial URL. */
+  job: string | null;
+  solved: boolean;
+};
+
 export type LeaderboardTaskOutcome = {
   solved: number;
   total: number;
+  /** Present when the server could read the underlying trials. */
+  trials?: LeaderboardTrialLink[];
 };
 
 export type LeaderboardTaskMatrix = {
@@ -96,6 +105,32 @@ export const TERMINAL_BENCH_PACKAGE =
 /** Hub path is org/package/leaderboard — board name (not `main`). */
 export const TERMINAL_BENCH_LEADERBOARD = 'v0-1-eval';
 export const HARBOR_HUB_URL = 'https://hub.harborframework.com';
+/** Benchmark versions selectable on the homepage (?version=<id>), newest first. */
+export type HomeBenchmark = {
+  id: string;
+  label: string;
+  package: string;
+  leaderboard: string;
+};
+
+export const HOME_BENCHMARKS: HomeBenchmark[] = [
+  {
+    id: '0.1',
+    label: 'Terminal-Bench-Science 0.1',
+    package: TERMINAL_BENCH_PACKAGE,
+    leaderboard: TERMINAL_BENCH_LEADERBOARD,
+  },
+];
+
+export const DEFAULT_HOME_BENCHMARK_ID = '0.1';
+
+export function homeBenchmarkById(id: string): HomeBenchmark {
+  return (
+    HOME_BENCHMARKS.find((benchmark) => benchmark.id === id) ??
+    HOME_BENCHMARKS[0]!
+  );
+}
+
 /** Public Harbor Hub edge-function host (leaderboard-read does not require auth). */
 export const HARBOR_HUB_FUNCTIONS_URL =
   'https://ofhuhcpkvzjlejydnvyd.supabase.co';
@@ -112,6 +147,17 @@ export function harborDatasetUrl(
 ): string {
   const [org, name] = packageName.split('/');
   return `${HARBOR_HUB_URL}/datasets/${encodeURIComponent(org)}/${encodeURIComponent(name)}/${encodeURIComponent(version)}`;
+}
+
+/** Harbor Hub page for a single task in a package. */
+export function harborTaskUrl(packageName: string, taskSlug: string): string {
+  const [org] = packageName.split('/');
+  return `${HARBOR_HUB_URL}/tasks/${encodeURIComponent(org)}/${encodeURIComponent(taskSlug)}`;
+}
+
+/** Harbor Hub page for a single trial. */
+export function harborTrialUrl(jobId: string, trialId: string): string {
+  return `${HARBOR_HUB_URL}/jobs/${encodeURIComponent(jobId)}/trials/${encodeURIComponent(trialId)}`;
 }
 
 /** Harbor Hub leaderboard tab for a package. */

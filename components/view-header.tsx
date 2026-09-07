@@ -8,12 +8,18 @@ export function ViewHeader({
   subtitle,
   detail,
   children,
+  icon,
+  exportIcon = false,
   showLogo = false,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   detail?: ReactNode;
   children?: ReactNode;
+  /** Top-right icon (e.g. the selected domain's glyph). */
+  icon?: ReactNode;
+  /** Keep the icon in image exports instead of swapping in the site logo. */
+  exportIcon?: boolean;
   showLogo?: boolean;
 }) {
   return (
@@ -42,6 +48,15 @@ export function ViewHeader({
               </p>
             ) : null)}
         </div>
+        {icon != null ? (
+          <span
+            data-export-icon-slot
+            data-export-icon={exportIcon ? '' : undefined}
+            className="flex shrink-0 items-center"
+          >
+            {icon}
+          </span>
+        ) : null}
         <span
           data-export-logo
           className={cn(

@@ -1,15 +1,8 @@
 'use client';
 
-import {
-  Copy01Icon,
-  Image01Icon,
-  Tick02Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
-import { toBlob } from 'html-to-image';
 import { useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
   DomainRadarChart,
@@ -22,12 +15,6 @@ import {
   LeaderboardToolbar,
   type LeaderboardFilters,
 } from '@/components/leaderboard/leaderboard-toolbar';
-import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { ViewDescriptionBar } from '@/components/view-description-bar';
 import { ViewHeader } from '@/components/view-header';
 import {
@@ -48,11 +35,16 @@ import {
   type DomainId,
   type DomainRadarAxis,
 } from '@/lib/domain-context';
+import { DOMAIN_ICONS } from '@/lib/domain-icons';
 import {
   createExportClone,
   highResolutionExportScale,
   waitForExportImages,
 } from '@/lib/export-view';
+import {
+  type PreparedExportImage,
+  ViewExportMenu,
+} from '@/components/view-export-menu';
 
 const DOMAIN_RADAR_IMAGE_ID = 'domain-radar-chart-image';
 const SVG_CAPTURE_PROPERTIES = [
@@ -172,127 +164,41 @@ function CopyDomainRadarActions({
   domain: DomainId;
   accentColor: string;
 }) {
-  const [tableCopyState, setTableCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-  const [imageCopyState, setImageCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-
-  async function copyData() {
-    try {
-      await navigator.clipboard.writeText(domainDataToTsv(data, axes, domain));
-      setTableCopyState('copied');
-    } catch {
-      setTableCopyState('error');
-    }
-    window.setTimeout(() => setTableCopyState('idle'), 1600);
-  }
-
-  async function copyChartImage() {
+  async function prepareImage(): Promise<PreparedExportImage | null> {
     const chart = document.getElementById(DOMAIN_RADAR_IMAGE_ID);
-    if (
-      !chart ||
-      !navigator.clipboard?.write ||
-      typeof ClipboardItem === 'undefined'
-    ) {
-      setImageCopyState('error');
-      window.setTimeout(() => setImageCopyState('idle'), 1600);
-      return;
-    }
+    if (!chart) return null;
 
     const { element: exportChart, remove } = createExportClone(chart);
     const { backgroundColor, restore } =
       inlineDomainRadarSvgStyles(exportChart);
-    try {
-      await waitForExportImages(exportChart);
-      const image = await toBlob(exportChart, {
+    await waitForExportImages(exportChart);
+    return {
+      element: exportChart,
+      options: {
         backgroundColor,
         cacheBust: true,
         pixelRatio: highResolutionExportScale(exportChart),
-      });
-      if (!image) throw new Error('Could not create radar image.');
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': image }),
-      ]);
-      setImageCopyState('copied');
-    } catch {
-      setImageCopyState('error');
-    } finally {
-      restore();
-      remove();
-    }
-    window.setTimeout(() => setImageCopyState('idle'), 1600);
+      },
+      cleanup: () => {
+        restore();
+        remove();
+      },
+    };
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy radar data as TSV"
-              className="active:!translate-y-0"
-              onClick={copyData}
-            >
-              <HugeiconsIcon
-                icon={tableCopyState === 'copied' ? Tick02Icon : Copy01Icon}
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  tableCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {tableCopyState === 'copied'
-            ? 'Copied as TSV'
-            : tableCopyState === 'error'
-              ? 'Could not copy TSV'
-              : 'Copy radar data as TSV'}
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy radar chart as PNG"
-              className="active:!translate-y-0"
-              onClick={copyChartImage}
-            >
-              <HugeiconsIcon
-                icon={imageCopyState === 'copied' ? Tick02Icon : Image01Icon}
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  imageCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {imageCopyState === 'copied'
-            ? 'Copied as PNG'
-            : imageCopyState === 'error'
-              ? 'Could not copy PNG'
-              : 'Copy radar chart as PNG'}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <ViewExportMenu
+      fileBaseName="terminal-bench-science-radar"
+      getTsv={() => domainDataToTsv(data, axes, domain)}
+      prepareImage={prepareImage}
+      accentColor={accentColor}
+    />
   );
 }
 
 export function DomainRadarView({ domain }: { domain: DomainId }) {
   const domainDefinition = getDomain('all');
+  const DomainIcon = DOMAIN_ICONS.all;
   const filterAccentColor = getDomain(domain).color;
   const axes = ALL_DOMAIN_RADAR_AXES;
   const { data, error, isPending } = useQuery({
@@ -388,7 +294,17 @@ export function DomainRadarView({ domain }: { domain: DomainId }) {
         id={DOMAIN_RADAR_IMAGE_ID}
         className="-mx-4 min-w-0 overflow-hidden rounded-none border border-x-0 bg-card md:mx-0 md:rounded-xl md:border-x"
       >
-        <ViewHeader title="Terminal-Bench-Science 0.1 Radar" />
+        <ViewHeader
+          title="Terminal-Bench-Science 0.1 Domain Radar"
+          icon={
+            <DomainIcon
+              className="size-4"
+              strokeWidth={2}
+              aria-hidden
+              style={{ color: domainDefinition.color }}
+            />
+          }
+        />
         <DomainRadarChart
           data={chartData}
           axes={axes}

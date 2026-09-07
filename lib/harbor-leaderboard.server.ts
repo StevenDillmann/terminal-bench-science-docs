@@ -45,6 +45,7 @@ type TrialModelRecord = {
 
 type TrialRecord = {
   id: string;
+  job_id: string | null;
   task_name: string;
   task_content_hash: string;
   rewards: JsonObject | null;
@@ -261,7 +262,7 @@ async function readTrials(
   for (const trialIdChunk of chunks(trialIds, QUERY_CHUNK_SIZE)) {
     const params = new URLSearchParams({
       select:
-        'id,task_name,task_content_hash,rewards,trial_model(n_input_tokens,n_output_tokens,cost_usd)',
+        'id,job_id,task_name,task_content_hash,rewards,trial_model(n_input_tokens,n_output_tokens,cost_usd)',
       id: `in.(${trialIdChunk.join(',')})`,
     });
     result.push(
@@ -406,6 +407,12 @@ function hasDerivedMetrics(row: LeaderboardRow): boolean {
   );
 }
 
+function hasTrialLinks(matrix: LeaderboardTaskMatrix): boolean {
+  return Object.values(matrix.rows).every((outcomes) =>
+    Object.values(outcomes).every((outcome) => Array.isArray(outcome.trials)),
+  );
+}
+
 async function addDerivedMetrics(
   apiKey: string,
   response: LeaderboardReadResponse,
@@ -419,7 +426,11 @@ async function addDerivedMetrics(
       },
     };
   }
-  if (response.task_matrix && response.rows.every(hasDerivedMetrics)) {
+  if (
+    response.task_matrix &&
+    hasTrialLinks(response.task_matrix) &&
+    response.rows.every(hasDerivedMetrics)
+  ) {
     return response;
   }
 
@@ -482,9 +493,12 @@ async function addDerivedMetrics(
       const outcome = taskOutcomes[slug] ?? {
         solved: 0,
         total: 0,
+        trials: [],
       };
+      const solved = numericReward(trial.rewards) === 1;
       outcome.total += 1;
-      if (numericReward(trial.rewards) === 1) outcome.solved += 1;
+      if (solved) outcome.solved += 1;
+      outcome.trials?.push({ id: trial.id, job: trial.job_id, solved });
       taskOutcomes[slug] = outcome;
     }
     matrixRows[row.id] = taskOutcomes;

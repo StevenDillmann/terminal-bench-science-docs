@@ -12,7 +12,6 @@ import {
 } from '@/components/home-view-toggle';
 import { LeaderboardTable } from '@/components/leaderboard/leaderboard-table';
 import { MatrixView } from '@/components/matrix-view';
-import { TaskActions } from '@/components/task-actions';
 import {
   parseHomeDomain,
   type DomainId,
@@ -65,7 +64,6 @@ export function HomeView() {
         <DomainSelector />
         <ViewContent view={view} domain={domain} />
       </section>
-      <TaskActions />
     </div>
   );
 }

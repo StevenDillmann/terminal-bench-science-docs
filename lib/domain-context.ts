@@ -52,8 +52,12 @@ export function getDomain(domain: DomainId): DomainDefinition {
 const GITHUB_TASKS_BASE =
   'https://github.com/harbor-framework/terminal-bench-science/tree/main/tasks';
 
+/** Hub dataset page, tasks tab: every task across all domains. */
+const HUB_TASKS_URL =
+  'https://hub.harborframework.com/datasets/terminal-bench-science/terminal-bench-science/latest?tab=tasks';
+
 const DOMAIN_TASK_PATHS: Record<DomainId, string> = {
-  all: GITHUB_TASKS_BASE,
+  all: HUB_TASKS_URL,
   life: `${GITHUB_TASKS_BASE}/life-sciences`,
   physical: `${GITHUB_TASKS_BASE}/physical-sciences`,
   earth: `${GITHUB_TASKS_BASE}/earth-sciences`,

@@ -7,6 +7,8 @@ import {
 export type ChartRowLabel = {
   model: string;
   agent: string;
+  /** Reasoning effort setting, e.g. "max", when the row reports one. */
+  reasoningEffort: string | null;
   /** Full "Model (Agent)" string for tooltips / plain text. */
   full: string;
 };
@@ -22,6 +24,10 @@ export function chartRowLabel(row: LeaderboardRow): ChartRowLabel {
       ?.label ??
     String(getAccessorValue(row, 'metadata.model_display') ?? '');
 
+  const effort = getAccessorValue(row, 'metadata.reasoning_effort');
+  const reasoningEffort =
+    typeof effort === 'string' && effort.trim() ? effort.trim() : null;
+
   const resolvedModel = model || (!agent ? row.id : '');
   const resolvedAgent = agent;
   const full =
@@ -32,6 +38,7 @@ export function chartRowLabel(row: LeaderboardRow): ChartRowLabel {
   return {
     model: resolvedModel || full,
     agent: resolvedAgent,
+    reasoningEffort,
     full,
   };
 }

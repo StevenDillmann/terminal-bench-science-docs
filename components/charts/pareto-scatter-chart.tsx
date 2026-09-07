@@ -40,8 +40,10 @@ const MIN_WIDTH = 480;
 const DEFAULT_HEIGHT = 580;
 const MARGIN = { top: 20, right: 28, bottom: 52, left: 84 };
 /** Half-side length of plot markers (squares). */
-const DOT_HALF = 4;
-const FRONTIER_DOT_HALF = 5;
+const DOT_HALF = 3;
+const FRONTIER_DOT_HALF = 3;
+/** Error bars show one standard error. */
+const ERROR_BAR_MULTIPLIER = 1;
 
 function niceTicks(min: number, max: number, count: number): number[] {
   if (!(max > min) || count < 2) return [min, max];
@@ -201,6 +203,8 @@ type ActiveTip = {
   model: string;
   agent: string;
   reasoningEffort: string | null;
+  accuracy: string;
+  accuracyCi: string | null;
   cost: string;
   tokens: string;
   releaseDate: string;
@@ -408,6 +412,10 @@ export function ParetoScatterChart({
             ? datum.labelSide === 'left'
             : cx > MARGIN.left + plotW * 0.75;
           const labelX = labelOnLeft ? cx - half - 6 : cx + half + 6;
+          const ciHalf =
+            datum.accuracyStderr != null && datum.accuracyStderr > 0
+              ? ERROR_BAR_MULTIPLIER * datum.accuracyStderr
+              : null;
           return (
             <g key={datum.id}>
               {/* Invisible hit target in SVG space (avoids HTML/SVG coordinate drift). */}
@@ -424,6 +432,9 @@ export function ParetoScatterChart({
                     model: modelText,
                     agent: agentText,
                     reasoningEffort: datum.reasoningEffort,
+                    accuracy: `${datum.y.toFixed(1)}%`,
+                    accuracyCi:
+                      ciHalf != null ? `± ${ciHalf.toFixed(1)}%` : null,
                     cost:
                       datum.cost == null
                         ? '—'
@@ -550,21 +561,40 @@ export function ParetoScatterChart({
           }
         >
           {active ? (
-            <div className="flex items-start justify-between gap-6">
-              <div className="min-w-0">
-                <p>{active.model}</p>
-                {active.agent ? (
-                  <p className="opacity-70">{active.agent}</p>
-                ) : null}
-                {active.reasoningEffort ? (
-                  <p className="opacity-70">{active.reasoningEffort}</p>
-                ) : null}
+            <div className="min-w-0">
+              <div className="flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                  <p className="whitespace-nowrap">
+                    {active.model}
+                    {active.reasoningEffort ? (
+                      <span className="opacity-70">
+                        {' '}({active.reasoningEffort})
+                      </span>
+                    ) : null}
+                  </p>
+                  {active.agent ? (
+                    <p className="opacity-70">{active.agent}</p>
+                  ) : null}
+                </div>
+                <div className="shrink-0 text-right tabular-nums">
+                  <p>{active.accuracy}</p>
+                  {active.accuracyCi ? (
+                    <p className="opacity-70">{active.accuracyCi}</p>
+                  ) : null}
+                </div>
               </div>
-              <div className="shrink-0 text-right tabular-nums opacity-70">
-                <p>{active.cost}</p>
-                <p>{active.tokens}</p>
-                {active.releaseDate !== '—' ? <p>{active.releaseDate}</p> : null}
-              </div>
+              <dl className="mt-1.5 grid grid-cols-[auto_auto] gap-x-4 gap-y-0.5 border-t border-current/20 pt-1.5 tabular-nums">
+                <dt className="opacity-70">Cost</dt>
+                <dd className="text-right">{active.cost}</dd>
+                <dt className="opacity-70">Tokens</dt>
+                <dd className="text-right">{active.tokens}</dd>
+                {active.releaseDate !== '—' ? (
+                  <>
+                    <dt className="opacity-70">Released</dt>
+                    <dd className="text-right">{active.releaseDate}</dd>
+                  </>
+                ) : null}
+              </dl>
             </div>
           ) : null}
         </TooltipContent>

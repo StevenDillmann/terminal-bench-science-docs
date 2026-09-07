@@ -16,8 +16,11 @@ const BAR_HEIGHT = 22;
 /** Match the landing-page resolution-rate bars: always scale against 100%. */
 const MAX_ACCURACY = 100;
 const TICKS = [0, 25, 50, 75, 100] as const;
-const Z_95 = 1.96;
+/** Error bars show one standard error, matching the leaderboard. */
+const ERROR_BAR_MULTIPLIER = 1;
 const BAR_COLOR = '#038f99';
+/** Half-height of the whisker end caps, in px. */
+const WHISKER_CAP = 4;
 
 function formatPassRate(value: number): string {
   return `${value.toLocaleString('en-US', {
@@ -90,11 +93,15 @@ export function PassRateBarChart() {
             const y = MARGIN.top + index * ROW_HEIGHT;
             const barY = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
             const barWidth = (row.accuracy / MAX_ACCURACY) * plotWidth;
-            const ciHalf = Z_95 * row.accuracyStderr;
-            const ciWidth =
-              (Math.max(0, Math.min(MAX_ACCURACY, row.accuracy + ciHalf) - row.accuracy) /
-                MAX_ACCURACY) *
-              plotWidth;
+            const ciHalf = ERROR_BAR_MULTIPLIER * row.accuracyStderr;
+            const ciLowerX =
+              barStartX +
+              (Math.max(0, row.accuracy - ciHalf) / MAX_ACCURACY) * plotWidth;
+            const ciUpperX =
+              barStartX +
+              (Math.min(MAX_ACCURACY, row.accuracy + ciHalf) / MAX_ACCURACY) *
+                plotWidth;
+            const whiskerY = barY + BAR_HEIGHT / 2;
 
             return (
               <g key={`${row.rank}-${row.model}-${row.agent}`}>
@@ -129,16 +136,22 @@ export function PassRateBarChart() {
                   height={BAR_HEIGHT}
                   fill={BAR_COLOR}
                 />
-                {ciWidth > 0 ? (
-                  <rect
-                    x={barStartX + barWidth}
-                    y={barY}
-                    width={ciWidth}
-                    height={BAR_HEIGHT}
-                    style={{
-                      fill: `color-mix(in srgb, ${BAR_COLOR} 35%, transparent)`,
-                    }}
-                  />
+                {ciUpperX > ciLowerX ? (
+                  <g className="stroke-foreground" strokeWidth={1}>
+                    <line x1={ciLowerX} x2={ciUpperX} y1={whiskerY} y2={whiskerY} />
+                    <line
+                      x1={ciLowerX}
+                      x2={ciLowerX}
+                      y1={whiskerY - WHISKER_CAP}
+                      y2={whiskerY + WHISKER_CAP}
+                    />
+                    <line
+                      x1={ciUpperX}
+                      x2={ciUpperX}
+                      y1={whiskerY - WHISKER_CAP}
+                      y2={whiskerY + WHISKER_CAP}
+                    />
+                  </g>
                 ) : null}
                 <text
                   x={barStartX + plotWidth + VALUE_GAP}

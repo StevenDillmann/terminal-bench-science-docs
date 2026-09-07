@@ -15,6 +15,7 @@ import { ScienceFeedbackLoop } from '@/components/charts/science-feedback-loop';
 import { TaskDomainCoverage } from '@/components/charts/task-domain-coverage';
 import { TokensVsStepsChart } from '@/components/charts/tokens-vs-steps-chart';
 import { ContributionsSection } from '@/components/contributions-section';
+import { HowToCite } from '@/components/how-to-cite';
 import { MdxPre } from '@/components/mdx-codeblock';
 
 export function getMDXComponents(components?: MDXComponents) {
@@ -34,6 +35,7 @@ export function getMDXComponents(components?: MDXComponents) {
     RoadmapDiagram,
     ScienceFeedbackLoop,
     TaskDomainCoverage,
+    HowToCite,
     ...components,
   } satisfies MDXComponents;
 }

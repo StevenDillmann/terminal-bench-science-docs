@@ -13,13 +13,14 @@ import {
   parseHomeDomain,
   type DomainId,
 } from '@/lib/domain-context';
+import { DOMAIN_ICONS } from '@/lib/domain-icons';
 import { cn } from '@/lib/utils';
 
 const VIEWS = ['leaderboard', 'pareto', 'matrix', 'domains'] as const;
 export type HomeViewId = (typeof VIEWS)[number];
 
 const VIEW_LABELS: Record<HomeViewId, string> = {
-  leaderboard: 'LEADERBOARD',
+  leaderboard: 'RANKING',
   pareto: 'PARETO',
   domains: 'RADAR',
   matrix: 'MATRIX',
@@ -61,27 +62,23 @@ export function DomainToggle({
     >
       {DOMAINS.map((item) => {
         const selected = domain === item.id;
+        const Icon = DOMAIN_ICONS[item.id];
         return (
           <TogglePrimitive
             key={item.id}
             value={item.id}
-            style={
-              selected
-                ? {
-                    color: item.color,
-                  }
-                : undefined
-            }
+            style={selected ? { color: item.color } : undefined}
             className={cn(
               buttonVariants({ variant: 'ghost', size: 'default' }),
-              'relative h-10 rounded-none px-3 text-xs tracking-[0.08em]',
+              'relative h-auto rounded-none px-5 py-3 text-sm tracking-[0.08em]',
               'text-muted-foreground hover:bg-muted/70 focus-visible:bg-muted/70',
               'data-pressed:font-semibold data-pressed:shadow-none',
             )}
           >
             <span className="flex flex-col items-center leading-none">
+              <Icon className="mb-2 size-[18px]" strokeWidth={2} aria-hidden />
               <span>{item.label}</span>
-              <span className="mt-1 text-[8px] tracking-[0.12em]">
+              <span className="mt-1.5 text-[9px] tracking-[0.12em]">
                 {item.id === 'all' ? 'DOMAINS' : 'SCIENCES'}
               </span>
             </span>

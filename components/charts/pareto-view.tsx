@@ -1,15 +1,8 @@
 'use client';
 
-import {
-  Copy01Icon,
-  Image01Icon,
-  Tick02Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
-import { toBlob } from 'html-to-image';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
   DEFAULT_PARETO_X,
@@ -29,7 +22,6 @@ import {
   LeaderboardToolbar,
   type LeaderboardFilters,
 } from '@/components/leaderboard/leaderboard-toolbar';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -37,11 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { ViewDescriptionBar } from '@/components/view-description-bar';
 import { ViewHeader } from '@/components/view-header';
 import {
@@ -57,11 +44,16 @@ import {
   getDomain,
   type DomainId,
 } from '@/lib/domain-context';
+import { DOMAIN_ICONS } from '@/lib/domain-icons';
 import {
   createExportClone,
   highResolutionExportScale,
   waitForExportImages,
 } from '@/lib/export-view';
+import {
+  type PreparedExportImage,
+  ViewExportMenu,
+} from '@/components/view-export-menu';
 import {
   fromUrlFilters,
   leaderboardFiltersParser,
@@ -70,7 +62,8 @@ import {
 
 const parseParetoXAxis = parseAsStringLiteral(PARETO_X_AXIS_IDS);
 const PARETO_IMAGE_ID = 'pareto-chart-image';
-const Z_95 = 1.96;
+/** Error bars and exports show one standard error. */
+const ERROR_BAR_MULTIPLIER = 1;
 const SVG_CAPTURE_PROPERTIES = [
   'color',
   'fill',
@@ -195,7 +188,7 @@ function paretoValueForExport(
 
 function formatConfidenceInterval(point: ParetoDatum): string {
   if (point.accuracyStderr == null) return '—';
-  return (Z_95 * point.accuracyStderr).toFixed(2);
+  return (ERROR_BAR_MULTIPLIER * point.accuracyStderr).toFixed(2);
 }
 
 function paretoDataToTsv(
@@ -208,7 +201,7 @@ function paretoDataToTsv(
     'Model',
     'Agent',
     paretoAxisHeader(yAxisId),
-    ...(yAxisId === 'accuracy' ? ['95% CI (± pp)'] : []),
+    ...(yAxisId === 'accuracy' ? ['Std. error (± pp)'] : []),
     paretoAxisHeader(xAxisId),
     'Pareto Frontier',
   ];
@@ -245,131 +238,42 @@ function CopyParetoActions({
   domain: DomainId;
   accentColor: string;
 }) {
-  const [tableCopyState, setTableCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-  const [imageCopyState, setImageCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-
-  async function copyData() {
-    try {
-      await navigator.clipboard.writeText(
-        paretoDataToTsv(data, xAxisId, yAxisId, domain),
-      );
-      setTableCopyState('copied');
-    } catch {
-      setTableCopyState('error');
-    }
-    window.setTimeout(() => setTableCopyState('idle'), 1600);
-  }
-
-  async function copyChartImage() {
+  async function prepareImage(): Promise<PreparedExportImage | null> {
     const chart = document.getElementById(PARETO_IMAGE_ID);
-    if (
-      !chart ||
-      !navigator.clipboard?.write ||
-      typeof ClipboardItem === 'undefined'
-    ) {
-      setImageCopyState('error');
-      window.setTimeout(() => setImageCopyState('idle'), 1600);
-      return;
-    }
+    if (!chart) return null;
 
     const { element: exportChart, remove } = createExportClone(chart);
-    const { backgroundColor, restore: restoreSvgStyles } =
-      inlineParetoSvgStyles(exportChart);
-    try {
-      await waitForExportImages(exportChart);
-      const image = await toBlob(exportChart, {
+    const { backgroundColor, restore } = inlineParetoSvgStyles(exportChart);
+    await waitForExportImages(exportChart);
+    return {
+      element: exportChart,
+      options: {
         backgroundColor,
         cacheBust: true,
         pixelRatio: highResolutionExportScale(exportChart),
         filter: (node) =>
           !(node instanceof Element && node.hasAttribute('data-export-ignore')),
-      });
-      if (!image) throw new Error('Could not create Pareto chart image.');
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': image }),
-      ]);
-      setImageCopyState('copied');
-    } catch {
-      setImageCopyState('error');
-    } finally {
-      restoreSvgStyles();
-      remove();
-    }
-    window.setTimeout(() => setImageCopyState('idle'), 1600);
+      },
+      cleanup: () => {
+        restore();
+        remove();
+      },
+    };
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy Pareto data as TSV"
-              className="active:!translate-y-0"
-              onClick={copyData}
-            >
-              <HugeiconsIcon
-                icon={tableCopyState === 'copied' ? Tick02Icon : Copy01Icon}
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  tableCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {tableCopyState === 'copied'
-            ? 'Copied as TSV'
-            : tableCopyState === 'error'
-              ? 'Could not copy TSV'
-              : 'Copy Pareto data as TSV'}
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy Pareto chart as PNG"
-              className="active:!translate-y-0"
-              onClick={copyChartImage}
-            >
-              <HugeiconsIcon
-                icon={imageCopyState === 'copied' ? Tick02Icon : Image01Icon}
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  imageCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {imageCopyState === 'copied'
-            ? 'Copied as PNG'
-            : imageCopyState === 'error'
-              ? 'Could not copy PNG'
-              : 'Copy Pareto chart as PNG'}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <ViewExportMenu
+      fileBaseName={`terminal-bench-science-${domain}-pareto`}
+      getTsv={() => paretoDataToTsv(data, xAxisId, yAxisId, domain)}
+      prepareImage={prepareImage}
+      accentColor={accentColor}
+    />
   );
 }
 
 export function ParetoView({ domain }: { domain: DomainId }) {
   const domainDefinition = getDomain(domain);
+  const DomainIcon = DOMAIN_ICONS[domain];
   const [xAxisId, setXAxisId] = useQueryState(
     'x',
     parseParetoXAxis.withDefault(DEFAULT_PARETO_X),
@@ -520,7 +424,7 @@ export function ParetoView({ domain }: { domain: DomainId }) {
               Terminal-Bench-Science 0.1 Pareto Frontier
               {domain !== 'all' ? (
                 <>
-                  {' · '}
+                  {' / '}
                   <span data-export-domain-accent={domainDefinition.color}>
                     {domainDefinition.title}
                   </span>
@@ -529,6 +433,15 @@ export function ParetoView({ domain }: { domain: DomainId }) {
             </>
           }
           subtitle={`${yLabel} vs. ${xLabel}`}
+          icon={
+            <DomainIcon
+              className="size-4"
+              strokeWidth={2}
+              aria-hidden
+              style={{ color: domainDefinition.color }}
+            />
+          }
+          exportIcon={domain !== 'all'}
         >
           <div className="flex items-center gap-2 uppercase">
             <span className="text-xs text-muted-foreground">{yLabel} vs</span>

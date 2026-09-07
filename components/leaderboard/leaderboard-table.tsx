@@ -4,9 +4,7 @@ import {
   ArrowDown01Icon,
   ArrowUp01Icon,
   ArrowUpDownIcon,
-  Copy01Icon,
-  Tick02Icon,
-  Image01Icon,
+  ArrowUpRight01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
@@ -16,9 +14,8 @@ import type {
   OnChangeFn,
   VisibilityState,
 } from '@tanstack/react-table';
-import { toBlob } from 'html-to-image';
 import { useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { LeaderboardSkeleton } from '@/components/leaderboard/leaderboard-skeleton';
 import {
@@ -28,12 +25,6 @@ import {
   type LeaderboardFilters,
 } from '@/components/leaderboard/leaderboard-toolbar';
 import { DataTable } from '@/components/ui/data-table';
-import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { ViewDescriptionBar } from '@/components/view-description-bar';
 import { ViewHeader } from '@/components/view-header';
 import {
@@ -52,14 +43,20 @@ import {
 } from '@/lib/leaderboard';
 import {
   domainExportTitle,
+  domainTasksUrl,
   getDomain,
   type DomainId,
 } from '@/lib/domain-context';
+import { DOMAIN_ICONS } from '@/lib/domain-icons';
 import {
   createExportClone,
   highResolutionExportScale,
   waitForExportImages,
 } from '@/lib/export-view';
+import {
+  type PreparedExportImage,
+  ViewExportMenu,
+} from '@/components/view-export-menu';
 import {
   fromUrlFilters,
   hiddenColumnsParser,
@@ -76,6 +73,16 @@ const SORTABLE_COLUMN_IDS = new Set([
   'total_cost_usd',
 ]);
 const TABLE_IMAGE_ID = 'leaderboard-table-image';
+
+/** Terminal-Bench-Science 0.1 task counts, used when no task matrix is served. */
+const DOMAIN_TASK_COUNTS: Record<DomainId, number> = {
+  all: 70,
+  life: 19,
+  physical: 17,
+  earth: 8,
+  mathematical: 17,
+  engineering: 9,
+};
 
 function isReleaseDateColumn(columnId: string): boolean {
   return columnId === 'release_date' || columnId === 'model_release_date';
@@ -166,7 +173,8 @@ function LeaderboardCell({
   }
 }
 
-const Z_95 = 1.96;
+/** Error bars and ± labels show one standard error. */
+const ERROR_BAR_MULTIPLIER = 1;
 
 function AccuracyBarCell({
   row,
@@ -183,9 +191,9 @@ function AccuracyBarCell({
     typeof accuracy === 'number' && !Number.isNaN(accuracy) ? accuracy : null;
   const se =
     typeof stderr === 'number' && !Number.isNaN(stderr) ? stderr : 0;
-  const half = Z_95 * se;
+  const half = ERROR_BAR_MULTIPLIER * se;
+  const ciLower = value != null ? Math.max(0, value - half) : 0;
   const ciUpper = value != null ? Math.min(100, value + half) : 0;
-  const ciWidth = value != null ? Math.max(0, ciUpper - value) : 0;
 
   if (value == null) {
     return (
@@ -193,12 +201,15 @@ function AccuracyBarCell({
     );
   }
 
+  // Label and bar share one interval: ±1 standard error, as the Hub's
+  // display string quotes it.
+
   return (
-    <div className="flex min-w-60 items-center gap-3">
-      <div className="w-32 shrink-0 whitespace-nowrap tabular-nums">
+    <div className="flex items-center gap-3 xl:min-w-52">
+      <div className="w-36 shrink-0 whitespace-nowrap tabular-nums">
         <LeaderboardCell value={display ?? accuracy} type="markdown" />
       </div>
-      <div className="relative h-3 min-w-20 flex-1 overflow-hidden rounded-none bg-muted">
+      <div className="relative h-3 min-w-20 max-w-[30vw] flex-1 rounded-none bg-muted">
         <div
           className="absolute inset-y-0 left-0 rounded-none"
           style={{
@@ -206,15 +217,24 @@ function AccuracyBarCell({
             width: `${Math.min(100, Math.max(0, value))}%`,
           }}
         />
-        {ciWidth > 0 ? (
-          <div
-            className="absolute inset-y-0 rounded-none"
-            style={{
-              backgroundColor: `color-mix(in srgb, ${accentColor} 35%, transparent)`,
-              left: `${Math.min(100, Math.max(0, value))}%`,
-              width: `${ciWidth}%`,
-            }}
-          />
+        {ciUpper > ciLower ? (
+          <>
+            <div
+              className="absolute top-1/2 h-px -translate-y-1/2 bg-foreground"
+              style={{
+                left: `${ciLower}%`,
+                width: `${ciUpper - ciLower}%`,
+              }}
+            />
+            <div
+              className="absolute top-1/2 h-1.5 w-px -translate-x-1/2 -translate-y-1/2 bg-foreground"
+              style={{ left: `${ciLower}%` }}
+            />
+            <div
+              className="absolute top-1/2 h-1.5 w-px -translate-x-1/2 -translate-y-1/2 bg-foreground"
+              style={{ left: `${ciUpper}%` }}
+            />
+          </>
         ) : null}
       </div>
     </div>
@@ -317,7 +337,7 @@ function exportColumnHeader(column: LeaderboardColumn): string {
 function formatConfidenceInterval(row: LeaderboardRow): string {
   const stderr = getAccessorValue(row, 'metrics.accuracy_stderr');
   if (typeof stderr !== 'number' || Number.isNaN(stderr)) return '—';
-  return (Z_95 * stderr).toFixed(2);
+  return (ERROR_BAR_MULTIPLIER * stderr).toFixed(2);
 }
 
 function formatExportDate(value: unknown): string {
@@ -388,7 +408,7 @@ function tableRowsToTsv(
     });
     if (column.id === 'accuracy') {
       tsvColumns.push({
-        header: '95% CI (± pp)',
+        header: 'Std. error (± pp)',
         value: formatConfidenceInterval,
       });
     }
@@ -433,164 +453,80 @@ function CopyLeaderboardActions({
   domain: DomainId;
   accentColor: string;
 }) {
-  const [tableCopyState, setTableCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-  const [imageCopyState, setImageCopyState] = useState<
-    'idle' | 'copied' | 'error'
-  >('idle');
-
-  async function copyTable() {
-    try {
-      await navigator.clipboard.writeText(
-        tableRowsToTsv(rows, columns, columnVisibility, domain),
-      );
-      setTableCopyState('copied');
-    } catch {
-      setTableCopyState('error');
-    }
-    window.setTimeout(() => setTableCopyState('idle'), 1600);
-  }
-
-  async function copyTableImage() {
+  async function prepareImage(): Promise<PreparedExportImage | null> {
     const table = document.getElementById(TABLE_IMAGE_ID);
-    if (
-      !table ||
-      !navigator.clipboard?.write ||
-      typeof ClipboardItem === 'undefined'
-    ) {
-      setImageCopyState('error');
-      window.setTimeout(() => setImageCopyState('idle'), 1600);
-      return;
-    }
+    if (!table) return null;
 
     const { element: exportTable, remove } = createExportClone(table);
-    try {
-      const exportScrollArea = exportTable.querySelector<HTMLElement>(
-        '[data-slot="scroll-area"]',
-      );
-      const exportViewport = exportTable.querySelector<HTMLElement>(
-        '[data-slot="scroll-area-viewport"]',
-      );
-      const exportDataTable = exportTable.querySelector<HTMLTableElement>(
-        '[data-slot="table"]',
-      );
-      if (exportScrollArea && exportViewport && exportDataTable) {
-        const fullTableWidth = Math.ceil(exportDataTable.scrollWidth);
-        const exportWidth = Math.max(fullTableWidth, exportTable.offsetWidth);
-        exportTable.style.width = `${exportWidth}px`;
-        exportTable.style.maxWidth = 'none';
-        exportTable.style.overflow = 'visible';
-        exportScrollArea.style.width = `${exportWidth}px`;
-        exportScrollArea.style.overflow = 'visible';
-        exportViewport.scrollLeft = 0;
-        exportViewport.style.width = `${exportWidth}px`;
-        exportViewport.style.overflow = 'visible';
-        exportDataTable.style.width = `${exportWidth}px`;
-        for (const scrollbar of exportTable.querySelectorAll(
-          '[data-slot="scroll-area-scrollbar"]',
-        )) {
-          scrollbar.remove();
-        }
-      }
-      for (const row of exportTable.querySelectorAll<HTMLElement>(
-        'tbody [data-slot="table-row"]',
+    const exportScrollArea = exportTable.querySelector<HTMLElement>(
+      '[data-slot="scroll-area"]',
+    );
+    const exportViewport = exportTable.querySelector<HTMLElement>(
+      '[data-slot="scroll-area-viewport"]',
+    );
+    const exportDataTable = exportTable.querySelector<HTMLTableElement>(
+      '[data-slot="table"]',
+    );
+    if (exportScrollArea && exportViewport && exportDataTable) {
+      const fullTableWidth = Math.ceil(exportDataTable.scrollWidth);
+      const exportWidth = Math.max(fullTableWidth, exportTable.offsetWidth);
+      exportTable.style.width = `${exportWidth}px`;
+      exportTable.style.maxWidth = 'none';
+      exportTable.style.overflow = 'visible';
+      exportScrollArea.style.width = `${exportWidth}px`;
+      exportScrollArea.style.overflow = 'visible';
+      exportViewport.scrollLeft = 0;
+      exportViewport.style.width = `${exportWidth}px`;
+      exportViewport.style.overflow = 'visible';
+      exportDataTable.style.width = `${exportWidth}px`;
+      for (const scrollbar of exportTable.querySelectorAll(
+        '[data-slot="scroll-area-scrollbar"]',
       )) {
-        row.removeAttribute('data-state');
-        row.style.backgroundColor = 'transparent';
+        scrollbar.remove();
       }
-      await waitForExportImages(exportTable);
-      const backgroundColor =
-        window.getComputedStyle(exportTable).backgroundColor;
-      const image = await toBlob(exportTable, {
-        backgroundColor,
+    }
+    for (const row of exportTable.querySelectorAll<HTMLElement>(
+      'tbody [data-slot="table-row"]',
+    )) {
+      row.removeAttribute('data-state');
+      row.style.backgroundColor = 'transparent';
+    }
+    await waitForExportImages(exportTable);
+    return {
+      element: exportTable,
+      options: {
+        backgroundColor: window.getComputedStyle(exportTable).backgroundColor,
         cacheBust: true,
         pixelRatio: highResolutionExportScale(exportTable),
-      });
-      if (!image) throw new Error('Could not create table image.');
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': image }),
-      ]);
-      setImageCopyState('copied');
-    } catch {
-      setImageCopyState('error');
-    } finally {
-      remove();
-    }
-
-    window.setTimeout(() => setImageCopyState('idle'), 1600);
+      },
+      cleanup: remove,
+    };
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy leaderboard as TSV"
-              className="active:!translate-y-0"
-              onClick={copyTable}
-            >
-              <HugeiconsIcon
-                icon={
-                  tableCopyState === 'copied' ? Tick02Icon : Copy01Icon
-                }
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  tableCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {tableCopyState === 'copied'
-            ? 'Copied as TSV'
-            : tableCopyState === 'error'
-              ? 'Could not copy TSV'
-              : 'Copy leaderboard as TSV'}
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Copy leaderboard as PNG"
-              className="active:!translate-y-0"
-              onClick={copyTableImage}
-            >
-              <HugeiconsIcon
-                icon={
-                  imageCopyState === 'copied' ? Tick02Icon : Image01Icon
-                }
-                strokeWidth={2}
-                className="text-muted-foreground"
-                style={
-                  imageCopyState === 'copied' ? { color: accentColor } : undefined
-                }
-              />
-            </Button>
-          }
-        />
-        <TooltipContent>
-          {imageCopyState === 'copied'
-            ? 'Copied as PNG'
-            : imageCopyState === 'error'
-              ? 'Could not copy PNG'
-              : 'Copy leaderboard as PNG'}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <ViewExportMenu
+      fileBaseName={`terminal-bench-science-${domain}-leaderboard`}
+      getTsv={() => tableRowsToTsv(rows, columns, columnVisibility, domain)}
+      prepareImage={prepareImage}
+      accentColor={accentColor}
+    />
   );
 }
+
+/**
+ * Fixed min widths (max natural width across domains, with the org columns
+ * shown) so toggling columns or switching domains never shifts the others.
+ * Below 680px the columns shrink to content so the table squeezes together.
+ */
+const STABLE_COLUMN_MIN_WIDTHS: Record<string, string> = {
+  model_display: 'min-w-[233px] max-[679px]:min-w-0',
+  agent_display: 'min-w-[224px] max-[679px]:min-w-0',
+  model_release_date: 'min-w-[169px] max-[679px]:min-w-0',
+  agent_org: 'min-w-[160px] max-[679px]:min-w-0',
+  model_org: 'min-w-[160px] max-[679px]:min-w-0',
+  total_tokens: 'min-w-[118px] max-[679px]:min-w-0',
+  total_cost_usd: 'min-w-[124px] max-[679px]:min-w-0',
+};
 
 function buildColumns(
   columns: LeaderboardColumn[],
@@ -683,7 +619,10 @@ function buildColumns(
           cellClassName: cn(
             align,
             column.type === 'number' && 'tabular-nums',
-            column.id === 'accuracy' && 'min-w-56',
+            // Content columns pin to 1px (nowrap keeps them content-sized)
+            // so extra table width widens the bar, not the gaps.
+            column.id === 'accuracy' ? 'xl:min-w-56' : 'xl:w-px',
+            STABLE_COLUMN_MIN_WIDTHS[column.id],
           ),
         },
       };
@@ -694,6 +633,7 @@ function buildColumns(
 
 export function LeaderboardTable({ domain }: { domain: DomainId }) {
   const domainDefinition = getDomain(domain);
+  const DomainIcon = DOMAIN_ICONS[domain];
   const { data, error, isPending } = useQuery({
     queryKey: leaderboardQueryKey(
       TERMINAL_BENCH_PACKAGE,
@@ -707,6 +647,19 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
     () => (data ? projectLeaderboardRowsToDomain(data.rows, domain) : []),
     [data, domain],
   );
+
+  // Tasks in the selected domain. `metrics.tasks` counts trials (tasks ×
+  // attempts), so count the task list itself, falling back to the release's
+  // known sizes when the public payload has no task matrix.
+  const taskCount = useMemo(() => {
+    const tasks = data?.task_matrix?.tasks;
+    if (tasks?.length) {
+      return domain === 'all'
+        ? tasks.length
+        : tasks.filter((task) => task.domain === domain).length;
+    }
+    return DOMAIN_TASK_COUNTS[domain];
+  }, [data, domain]);
 
   const facets = useMemo(() => {
     if (!data) {
@@ -822,16 +775,37 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
                 Terminal-Bench-Science 0.1 Leaderboard
                 {domain !== 'all' ? (
                   <>
-                    {' · '}
-                    <span
-                      data-export-domain-accent={domainDefinition.color}
-                    >
-                      {domainDefinition.title}
-                    </span>
+                    {' / '}
+                    <span>{domainDefinition.title}</span>
                   </>
                 ) : null}
+                {' / '}
+                <a
+                  href={domainTasksUrl(domain)}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-export-plain
+                  className="inline-flex items-baseline gap-0.5 underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-current"
+                >
+                  {taskCount != null ? `${taskCount} tasks` : 'Tasks'}
+                  <HugeiconsIcon
+                    data-export-ignore
+                    icon={ArrowUpRight01Icon}
+                    strokeWidth={2}
+                    className="size-3 self-center"
+                  />
+                </a>
               </>
             }
+            icon={
+              <DomainIcon
+                className="size-4"
+                strokeWidth={2}
+                aria-hidden
+                style={{ color: domainDefinition.color }}
+              />
+            }
+            exportIcon={domain !== 'all'}
           />
         }
         headerClassName="border-b"
@@ -871,7 +845,8 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
         }
         footer={
           <ViewDescriptionBar>
-            Resolution rate ranked by agent and model performance
+            Resolution rate ranked by agent and model performance ± standard
+            error
           </ViewDescriptionBar>
         }
       />

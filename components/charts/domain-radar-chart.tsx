@@ -254,6 +254,15 @@ function ScoreLabels({
   });
 }
 
+const ALL_COLUMN_ID = 'all';
+
+type TableColumn = {
+  id: string;
+  title: string;
+  subtitle: string;
+  color: string;
+};
+
 type DomainRadarChartProps = {
   data: DomainRadarDatum[];
   axes: readonly DomainRadarAxis[];
@@ -283,36 +292,53 @@ export function DomainRadarChart({
   const [sort, setSort] = useState<{
     axisId: string;
     direction: 'asc' | 'desc';
-  } | null>(null);
+  } | null>(() => ({ axisId: ALL_COLUMN_ID, direction: 'desc' }));
   const labeledData = data.filter(
     (datum) => selectedIds.includes(datum.id) || datum.id === activeId,
   );
   const scale = buildRadarScale(data, spokeAxes);
+  const tableColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        id: ALL_COLUMN_ID,
+        title: 'All',
+        subtitle: 'Domains',
+        color: getDomain('all').color,
+      },
+      ...axes.map((axis) => ({
+        id: axis.id,
+        title: axis.label.replace(' Sciences', ''),
+        subtitle: 'Sciences',
+        color: getDomain(axis.id as DomainId).color,
+      })),
+    ],
+    [axes],
+  );
   const sortedTableData = useMemo(() => {
     if (!sort) return data;
     return [...data].sort((left, right) => {
       const delta =
-        sort.axisId === 'overall'
+        sort.axisId === ALL_COLUMN_ID
           ? left.overall - right.overall
           : (left.scores[sort.axisId] ?? 0) -
             (right.scores[sort.axisId] ?? 0);
       if (delta !== 0) return sort.direction === 'asc' ? delta : -delta;
 
       const costDelta = compareAscending(
-        sort.axisId === 'overall'
+        sort.axisId === ALL_COLUMN_ID
           ? left.overallCost
           : (left.domainCosts[sort.axisId] ?? Number.POSITIVE_INFINITY),
-        sort.axisId === 'overall'
+        sort.axisId === ALL_COLUMN_ID
           ? right.overallCost
           : (right.domainCosts[sort.axisId] ?? Number.POSITIVE_INFINITY),
       );
       if (costDelta !== 0) return costDelta;
 
       const tokenDelta = compareAscending(
-        sort.axisId === 'overall'
+        sort.axisId === ALL_COLUMN_ID
           ? left.overallTokens
           : (left.domainTokens[sort.axisId] ?? Number.POSITIVE_INFINITY),
-        sort.axisId === 'overall'
+        sort.axisId === ALL_COLUMN_ID
           ? right.overallTokens
           : (right.domainTokens[sort.axisId] ?? Number.POSITIVE_INFINITY),
       );
@@ -351,108 +377,66 @@ export function DomainRadarChart({
           <table className="w-full min-w-[34rem] border-separate border-spacing-0">
             <thead>
               <tr>
-                <th
-                  aria-sort={
-                    sort?.axisId === 'overall'
-                      ? sort.direction === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
-                  }
-                  className="h-12 min-w-44 border-r border-b bg-sidebar px-3 text-left text-xs font-medium text-muted-foreground uppercase"
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span>Model / Agent</span>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 hover:text-foreground"
-                      style={{
-                        color:
-                          sort?.axisId === 'overall' ? '#038f99' : undefined,
-                      }}
-                      onClick={() =>
-                        setSort((current) =>
-                          current?.axisId === 'overall'
-                            ? {
-                                axisId: 'overall',
-                                direction:
-                                  current.direction === 'desc' ? 'asc' : 'desc',
-                              }
-                            : { axisId: 'overall', direction: 'desc' },
-                        )
-                      }
-                    >
-                      <span className="text-sm">Overall</span>
-                      <HugeiconsIcon
-                        icon={
-                          sort?.axisId !== 'overall'
-                            ? ArrowUpDownIcon
-                            : sort.direction === 'asc'
-                              ? ArrowUp01Icon
-                              : ArrowDown01Icon
-                        }
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                    </button>
-                  </span>
+                <th className="h-12 min-w-44 border-r border-b bg-sidebar px-3 text-left text-xs font-medium text-muted-foreground uppercase">
+                  Model / Agent
                 </th>
-                {axes.map((axis) => (
-                  <th
-                    key={axis.id}
-                    aria-sort={
-                      sort?.axisId === axis.id
-                        ? sort.direction === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    className="h-12 min-w-18 border-r border-b px-2 text-center text-[10px] leading-tight font-medium uppercase last:border-r-0"
-                    style={
-                      {
-                        '--domain-header-color': getDomain(
-                          axis.id as DomainId,
-                        ).color,
-                        color:
-                          sort?.axisId === axis.id
-                            ? getDomain(axis.id as DomainId).color
-                            : 'var(--foreground)',
-                      } as CSSProperties
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="flex w-full flex-col items-center justify-center gap-0.5 uppercase hover:text-[var(--domain-header-color)]"
-                      onClick={() =>
-                        setSort((current) =>
-                          current?.axisId === axis.id
-                            ? {
-                                axisId: axis.id,
-                                direction:
-                                  current.direction === 'desc' ? 'asc' : 'desc',
-                              }
-                            : { axisId: axis.id, direction: 'desc' },
-                        )
+                {tableColumns.map((column) => {
+                  const isSorted = sort?.axisId === column.id;
+                  return (
+                    <th
+                      key={column.id}
+                      aria-sort={
+                        isSorted
+                          ? sort.direction === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
+                      className="h-12 min-w-18 border-r border-b px-2 text-center text-[10px] leading-tight font-medium uppercase last:border-r-0"
+                      style={
+                        {
+                          '--domain-header-color': column.color,
+                          color: isSorted ? column.color : 'var(--foreground)',
+                          backgroundColor: isSorted
+                            ? `color-mix(in oklch, ${column.color} 10%, var(--card))`
+                            : undefined,
+                        } as CSSProperties
                       }
                     >
-                      <span>{axis.label.replace(' Sciences', '')}</span>
-                      <span className="text-[8px] tracking-[0.1em]">
-                        Sciences
-                      </span>
-                      <HugeiconsIcon
-                        icon={
-                          sort?.axisId !== axis.id
-                            ? ArrowUpDownIcon
-                            : sort.direction === 'asc'
-                              ? ArrowUp01Icon
-                              : ArrowDown01Icon
+                      <button
+                        type="button"
+                        className="flex w-full flex-col items-center justify-center gap-0.5 uppercase hover:text-[var(--domain-header-color)]"
+                        onClick={() =>
+                          setSort((current) =>
+                            current?.axisId === column.id
+                              ? {
+                                  axisId: column.id,
+                                  direction:
+                                    current.direction === 'desc' ? 'asc' : 'desc',
+                                }
+                              : { axisId: column.id, direction: 'desc' },
+                          )
                         }
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                    </button>
-                  </th>
-                ))}
+                      >
+                        <span>{column.title}</span>
+                        <span className="text-[8px] tracking-[0.1em]">
+                          {column.subtitle}
+                        </span>
+                        <HugeiconsIcon
+                          icon={
+                            !isSorted
+                              ? ArrowUpDownIcon
+                              : sort.direction === 'asc'
+                                ? ArrowUp01Icon
+                                : ArrowDown01Icon
+                          }
+                          strokeWidth={2}
+                          className="size-3"
+                        />
+                      </button>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -497,6 +481,11 @@ export function DomainRadarChart({
                             }}
                           >
                             {datum.label.model}
+                            {datum.label.reasoningEffort ? (
+                              <span className="font-normal text-muted-foreground">
+                                {' '}({datum.label.reasoningEffort})
+                              </span>
+                            ) : null}
                           </span>
                           {datum.label.agent ? (
                             <span className="block truncate text-[10px] font-normal text-muted-foreground">
@@ -504,17 +493,32 @@ export function DomainRadarChart({
                             </span>
                           ) : null}
                         </span>
-                        <span className="shrink-0 text-xs font-medium tabular-nums">
-                          {datum.overall.toFixed(1)}%
-                        </span>
                       </button>
                     </th>
-                    {axes.map((axis) => {
-                      const score = datum.scores[axis.id] ?? 0;
+                    {tableColumns.map((column) => {
+                      const score =
+                        column.id === ALL_COLUMN_ID
+                          ? datum.overall
+                          : datum.scores[column.id] ?? 0;
+                      // Once any model is selected, the row bands carry the
+                      // color and the sorted column steps back to plain cells.
+                      const tintSortedColumn =
+                        sort?.axisId === column.id && selectedIds.length === 0;
                       return (
                         <td
-                          key={axis.id}
-                          className="border-r border-b px-2 py-2 text-center text-xs tabular-nums last:border-r-0"
+                          key={column.id}
+                          className={cn(
+                            'border-r border-b px-2 py-2 text-center text-xs tabular-nums last:border-r-0',
+                            tintSortedColumn && 'font-medium',
+                          )}
+                          style={
+                            tintSortedColumn
+                              ? {
+                                  color: column.color,
+                                  backgroundColor: `color-mix(in oklch, ${column.color} 10%, var(--card))`,
+                                }
+                              : undefined
+                          }
                         >
                           {score.toFixed(1)}%
                         </td>

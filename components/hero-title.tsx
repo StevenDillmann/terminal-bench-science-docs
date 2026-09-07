@@ -42,7 +42,7 @@ function DigitReel({ from, to }: { from: number; to: number }) {
 
 export function HeroTitle() {
   return (
-    <h1 className="max-w-full px-1 text-center text-pretty text-4xl font-normal tracking-tighter uppercase sm:text-5xl md:text-7xl">
+    <h1 className="max-w-full whitespace-nowrap px-1 text-center text-[clamp(1.125rem,7vw,2.125rem)] font-normal tracking-tighter uppercase sm:text-5xl md:text-6xl lg:text-[4rem] lg:leading-none">
       TERMINAL-BENCH-
       <span>SCIENCE</span>{' '}
       <a

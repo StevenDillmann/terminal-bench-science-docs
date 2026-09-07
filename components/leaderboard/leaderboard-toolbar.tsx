@@ -11,6 +11,7 @@ import type { OnChangeFn, VisibilityState } from '@tanstack/react-table';
 import { useMemo } from 'react';
 
 import { HomeViewToggle } from '@/components/home-view-toggle';
+import { BenchmarkSelect } from '@/components/leaderboard/benchmark-select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -443,6 +444,7 @@ export function LeaderboardToolbar({
         </Badge>
       ))}
       <div className="flex shrink-0 items-center gap-1.5">
+        <BenchmarkSelect />
         {/* Mobile: drawers below sm */}
         <div className="flex items-center gap-1.5 sm:hidden">
           {showColumnControls ? <Drawer showSwipeHandle>
