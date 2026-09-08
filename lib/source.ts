@@ -1,4 +1,4 @@
-import { docs, pages } from 'collections/server';
+import { docs, highlights, pages } from 'collections/server';
 import { loader } from 'fumadocs-core/source';
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
 import { docsContentRoute, docsImageRoute, docsRoute } from './shared';
@@ -14,6 +14,12 @@ export const source = loader({
 export const pagesSource = loader({
   baseUrl: '/',
   source: pages.toFumadocsSource(),
+});
+
+/** Research highlights, newest first. */
+export const highlightsSource = loader({
+  baseUrl: '/highlights',
+  source: highlights.toFumadocsSource(),
 });
 
 export function getPageImage(page: (typeof source)['$inferPage']) {
