@@ -90,7 +90,7 @@ export function CurrentCall(): ReactNode {
           <span className="text-lg font-medium tracking-[0.02em] uppercase">
             Contribute to Terminal-Bench-Science {CONTRIBUTION_CALL.release}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm tracking-[0.04em] text-[#038f99] uppercase">
+          <span className="inline-flex items-center gap-1.5 text-base tracking-[0.04em] text-[#038f99] uppercase">
             <Atom className="size-4" strokeWidth={2} aria-hidden />
             Deadline{" "}
             <time dateTime={CONTRIBUTION_CALL.deadline}>
