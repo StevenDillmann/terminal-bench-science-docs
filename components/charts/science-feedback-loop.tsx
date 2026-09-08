@@ -97,7 +97,15 @@ function Box({ rect, lines }: { rect: Rect; lines?: readonly string[] }) {
   );
 }
 
-export function ScienceFeedbackLoop() {
+export function ScienceFeedbackLoop({
+  showTitle = true,
+  captionHref = '/contribute',
+}: {
+  /** Hide the small heading above the figure (e.g. on the Contribute page). */
+  showTitle?: boolean;
+  /** Where the caption links; `null` renders it as plain text. */
+  captionHref?: string | null;
+}) {
   const rowMidY = ROW_Y + BOX_H / 2;
   const rowBottom = ROW_Y + BOX_H;
 
@@ -106,14 +114,16 @@ export function ScienceFeedbackLoop() {
 
   return (
     <figure id="science-feedback-loop" className="my-6 not-prose">
-      <div className="mb-1 flex items-center">
-        <p
-          className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
-          style={{ paddingLeft: CHART_TITLE_MARGIN }}
-        >
-          {CHART_TITLE}
-        </p>
-      </div>
+      {showTitle ? (
+        <div className="mb-1 flex items-center">
+          <p
+            className="min-w-0 whitespace-nowrap text-sm uppercase text-muted-foreground"
+            style={{ paddingLeft: CHART_TITLE_MARGIN }}
+          >
+            {CHART_TITLE}
+          </p>
+        </div>
+      ) : null}
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"
@@ -215,14 +225,16 @@ export function ScienceFeedbackLoop() {
         />
       </svg>
       <figcaption className="mt-2 text-center text-sm text-muted-foreground">
-        <a
-          href="https://www.tbench.ai/news/tb-science-announcement"
-          target="_blank"
-          rel="noreferrer"
-          className="underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Terminal-Bench-Science Feedback Loop
-        </a>
+        {captionHref ? (
+          <a
+            href={captionHref}
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {CHART_TITLE}
+          </a>
+        ) : (
+          CHART_TITLE
+        )}
       </figcaption>
     </figure>
   );

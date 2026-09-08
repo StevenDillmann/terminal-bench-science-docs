@@ -1,31 +1,39 @@
-import { ApaBlock, BibtexBlock } from '@/components/copy-bibtex';
-import { CITATION_DOI, CITATION_DOI_URL } from '@/lib/citation';
+import { ApaBlock, BibtexBlock } from "@/components/copy-bibtex";
+import {
+  CITATION_DOI,
+  CITATION_DOI_URL,
+  CITATION_ZENODO_URL,
+} from "@/lib/citation";
 
-/** "How to cite" block for MDX pages. */
+/**
+ * "Citation" section body for MDX pages; identical on every page that cites.
+ * The paragraph is ordinary prose so it inherits the article's text styling.
+ */
 export function HowToCite() {
   return (
-    <div className="not-prose my-6 flex w-full min-w-0 flex-col gap-3">
-      <p className="m-0 text-sm text-muted-foreground">
-        If Terminal-Bench-Science is useful in your work, please cite it. One
-        entry covers every release; the DOI{' '}
-        <a
-          href={CITATION_DOI_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-foreground underline underline-offset-4"
-        >
+    <>
+      <p>
+        If you find this work useful, please cite it. The DOI{" "}
+        <a href={CITATION_DOI_URL} target="_blank" rel="noreferrer">
           {CITATION_DOI}
-        </a>{' '}
-        always resolves to the latest version.
+        </a>{" "}
+        is the concept DOI and always resolves to the latest release; to cite
+        a specific release, use that version&rsquo;s DOI from the{" "}
+        <a href={CITATION_ZENODO_URL} target="_blank" rel="noreferrer">
+          Zenodo record
+        </a>
+        .
       </p>
-      <span className="text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
-        APA
-      </span>
-      <ApaBlock />
-      <span className="mt-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
-        BibTeX
-      </span>
-      <BibtexBlock />
-    </div>
+      <div className="not-prose my-6 flex w-full min-w-0 flex-col gap-3">
+        <span className="text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
+          APA
+        </span>
+        <ApaBlock />
+        <span className="mt-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
+          BibTeX
+        </span>
+        <BibtexBlock />
+      </div>
+    </>
   );
 }

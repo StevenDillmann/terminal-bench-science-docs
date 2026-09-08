@@ -13,13 +13,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 
 const POSTS = [
   {
-    href: '/contribution-call',
-    date: '2026-09-05',
-    title: 'Terminal-Bench-Science 0.2 Call for Contributions',
-    description:
-      'Contribute your scientific workflows as benchmark tasks. Pull requests are due October 5, 2026.',
-  },
-  {
     href: '/announcement',
     date: '2026-08-27',
     title: 'Terminal-Bench-Science 0.1',
@@ -29,9 +22,9 @@ const POSTS = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: 'Announcements',
+  title: 'Announcement',
   description:
-    'Releases and contribution calls from Terminal-Bench-Science.',
+    'Release announcements from Terminal-Bench-Science.',
 };
 
 export default function AnnouncementsPage() {
@@ -42,9 +35,9 @@ export default function AnnouncementsPage() {
         GeistSans.className,
       )}
     >
-      <h1>Announcements</h1>
+      <h1>Announcement</h1>
       <p className="mb-10 text-muted-foreground">
-        Releases and contribution calls from Terminal-Bench-Science.
+        Release announcements from Terminal-Bench-Science.
       </p>
       <div className="-mx-4 overflow-hidden border bg-border sm:mx-0">
         {POSTS.map((post) => (

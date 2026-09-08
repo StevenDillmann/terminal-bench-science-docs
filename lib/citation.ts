@@ -1,6 +1,10 @@
 /** Canonical citation. The concept DOI always resolves to the latest version. */
 export const CITATION_DOI = '10.5281/zenodo.22110253';
 export const CITATION_DOI_URL = `https://doi.org/${CITATION_DOI}`;
+/** Zenodo concept record: lists every version and their own DOIs. */
+export const CITATION_ZENODO_URL = 'https://zenodo.org/records/22110253';
+export const CITATION_CFF_URL =
+  'https://github.com/harbor-framework/terminal-bench-science/blob/main/CITATION.cff';
 export const CITATION_REPO_URL =
   'https://github.com/harbor-framework/terminal-bench-science';
 

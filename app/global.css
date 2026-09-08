@@ -74,6 +74,16 @@
   letter-spacing: -0.025em;
 }
 
+/* Page subtitle under content-page titles: display mono face, as on tbench.ai. */
+p.page-subtitle,
+.content-page p.page-subtitle {
+  font-family: var(--font-google-sans-code), ui-monospace, monospace;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 400;
+  letter-spacing: -0.05em;
+}
+
 /* Content pages (/run, /announcement): Geist Sans for prose, Code for headings/code. */
 .content-page {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;

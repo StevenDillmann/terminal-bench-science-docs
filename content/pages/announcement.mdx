@@ -1,11 +1,14 @@
 ---
 title: Terminal-Bench-Science 0.1
+author: Steven Dillmann
+authorUrl: https://x.com/StevenDillmann
+date: 2026-08-27
 description: Terminal-Bench-Science evaluates AI agents on workflows from researchers' own work. Scientists, not model developers or data vendors, set the bar for scientific capability in AI.
 ---
 
 Terminal-Bench-Science is a benchmark led by researchers at [Stanford University](https://ai.stanford.edu/) and built by the team behind [Terminal-Bench](https://www.tbench.ai/) in collaboration with [domain experts from a range of scientific disciplines and research institutions](/contributors) around the world. It measures the AI agent capabilities through a diverse set of challenging, expert-curated workflows drawn from scientific research.
 
-Terminal-Bench-Science is a continuous benchmark that evolves alongside frontier AI, creating a feedback loop between scientific needs and AI development. Our first release includes [70 tasks](https://github.com/harbor-framework/terminal-bench-science#task-coverage) from the life, physical, Earth, mathematical, and engineering sciences. The strongest model evaluated, Claude Opus 5, achieves a 30% resolution rate on Terminal-Bench-Science 0.1.
+Terminal-Bench-Science is a continuous benchmark that evolves alongside frontier AI, creating a feedback loop between scientific needs and AI development. Our first release includes [70 tasks](https://github.com/harbor-framework/terminal-bench-science#task-coverage) from the life, physical, earth, mathematical, and engineering sciences. The strongest model evaluated, Claude Opus 5, achieves a 30% resolution rate on Terminal-Bench-Science 0.1.
 
 <PassRateBarChart />
 
@@ -25,7 +28,7 @@ Achieving this requires benchmarks that reflect real scientific practice, provid
 
 ## Tasks
 
-Terminal-Bench-Science 0.1 includes 70 tasks across the life, physical, Earth, mathematical, and engineering sciences. Tasks span scientific data analysis, statistical inference, simulation, optimization, theorem proving, image reconstruction, signal processing, inverse problems, sensor calibration, model fitting, classification, and scientific machine learning.
+Terminal-Bench-Science 0.1 includes 70 tasks across the life, physical, earth, mathematical, and engineering sciences. Tasks span scientific data analysis, statistical inference, simulation, optimization, theorem proving, image reconstruction, signal processing, inverse problems, sensor calibration, model fitting, classification, and scientific machine learning.
 
 <TaskDomainCoverage />
 
@@ -53,7 +56,7 @@ Resolution rates also vary by scientific domain. Anthropic and OpenAI models tak
 
 ## Conclusion and Roadmap
 
-Terminal-Bench-Science 0.1 is a community effort by researchers across the life, physical, Earth, mathematical, and engineering sciences, together with the [Terminal-Bench](https://www.tbench.ai/) and [Harbor](https://www.harborframework.com/) team. It is the most rigorous benchmark of scientific agent capabilities we could build in the open, and we are only getting started: Terminal-Bench-Science 0.1 is the first release of a continuous benchmark.
+Terminal-Bench-Science 0.1 is a community effort by researchers across the life, physical, earth, mathematical, and engineering sciences, together with the [Terminal-Bench](https://www.tbench.ai/) and [Harbor](https://www.harborframework.com/) team. It is the most rigorous benchmark of scientific agent capabilities we could build in the open, and we are only getting started: Terminal-Bench-Science 0.1 is the first release of a continuous benchmark.
 
 Regular releases will add tasks, broaden coverage across the five scientific domains, retire tasks that agents saturate or that review reveals to be underspecified, and keep the [leaderboard](/) current as new frontier models are released. Each release is calibrated against the frontier at the time. For Terminal-Bench-Science 0.1, this was Claude Opus 5 and GPT-5.6 Sol, and as stronger models emerge we will use them to evaluate and calibrate new and improved tasks. Tasks are versioned so that trials can be re-used, re-graded, or re-run with a single Harbor command, which keeps the cost of updating results low. Progress is tracked in the open on the [task dashboard](https://stevendillmann.github.io/tb-science-task-dashboard/), and every release is tagged on [GitHub](https://github.com/harbor-framework/terminal-bench-science/releases) and [Harbor Hub](https://hub.harborframework.com/datasets/terminal-bench-science/terminal-bench-science/latest).
 
@@ -63,22 +66,7 @@ Join the effort in `#tb-science` on [Discord](https://discord.com/invite/2Pe5uWG
 
 ## Citation
 
-If you find this work useful, please cite it. You can use the "Cite this repository" button on GitHub (generated from [CITATION.cff](https://github.com/harbor-framework/terminal-bench-science/blob/main/CITATION.cff)) or cite manually using the information below. The DOI below is the [concept DOI](https://doi.org/10.5281/zenodo.22110253), which always resolves to the latest release; to cite a specific release, use that version's DOI from the [Zenodo record](https://doi.org/10.5281/zenodo.22110253).
-
-<div className="bibtex-block">
-
-```bibtex
-@software{Terminal-Bench-Science_2026,
-  author = {{Terminal-Bench-Science Team}},
-  doi = {10.5281/zenodo.22110253},
-  license = {Apache-2.0},
-  title = {{Terminal-Bench-Science: Evaluating AI agents on research workflows across scientific domains}},
-  url = {https://github.com/harbor-framework/terminal-bench-science},
-  year = {2026}
-}
-```
-
-</div>
+<HowToCite />
 
 ## Acknowledgements
 
@@ -86,12 +74,6 @@ Thank you to all of the [task contributors, reviewers, and advisors](/contributo
 
 Special thanks to our project lead advisors Ludwig Schmidt and Sanmi Koyejo; our senior reviewers Allen Hart, Ivan Bercovich, Joseph Janssen, Jiaming Hu, Steffen Bollmann, and Sergey Aganezov; our AI research advisors Ryan Marten, Alex Shaw, Lin Shi, Benjamin Feuer, Mike A. Merrill, Alex Dimakis, Jenia Jitsev, Bodhisattwa Majumder, Peter Clark, Thomas Wolf, Braden Hancock, and Andy Konwinski; and our scientific advisors Sara Beery, Jo Dunkley, J. Nathan Kutz, Ching-Yao Lai, Scott Linderman, Emma Lundberg, Russ Poldrack, Aviv Regev, and Risa Wechsler.
 
-Terminal-Bench-Science is an open academic collaboration hosted by [Stanford University](https://ai.stanford.edu/) and the [Laude Institute](https://laude.org/), in partnership with the [Stanford AI Lab (SAIL)](https://ai.stanford.edu/), the [Stanford Institute for Human-Centered Artificial Intelligence (HAI)](https://hai.stanford.edu/), [Stanford AI Measurement Science (AIMS)](https://aimslab.stanford.edu/), the [NSF AI Institute for Foundations of Machine Learning (IFML)](https://www.ifml.institute/), the [Allen Institute](https://alleninstitute.org/), and the [Allen Institute for AI (Ai2)](https://allenai.org/). As part of the [Terminal-Bench](https://www.tbench.ai/) franchise, it is built by the Terminal-Bench and [Harbor](https://www.harborframework.com/) team together with a community of [scientific contributors](/contributors).
+Terminal-Bench-Science is an open academic collaboration hosted by [Stanford University](https://ai.stanford.edu/) and the [Laude Institute](https://laude.org/), in partnership with the [Stanford AI Lab (SAIL)](https://ai.stanford.edu/), the [Stanford Institute for Human-Centered Artificial Intelligence (HAI)](https://hai.stanford.edu/), [Stanford AI Measurement Science (AIMS)](https://aimslab.stanford.edu/), the [NSF AI Institute for Foundations of Machine Learning (IFML)](https://www.ifml.institute/), the [Allen Institute](https://alleninstitute.org/), and the [Allen Institute for AI (Ai2)](https://allenai.org/). As part of the [Terminal-Bench](https://www.tbench.ai/) franchise, it is built by the [Terminal-Bench](https://www.tbench.ai/) and [Harbor](https://www.harborframework.com/) team together with a community of [scientific contributors](/contributors).
 
 We thank the [Laude Institute](https://laude.org/) for support through the Slingshots program, [Snorkel AI](https://snorkel.ai/) for support through the Open Benchmarks Grants program, the [2077AI Open Source Foundation](https://www.2077ai.com/) for [PP API](https://www.ppapi.ai/) credits supporting task review and curation, and [UniPat AI](https://unipat.ai/) and [Modal](https://modal.com/) for their support of Terminal-Bench-Science. We thank [Bespoke Labs](https://bespokelabs.ai/), [Anthropic](https://www.anthropic.com/), [Google](https://www.google.com/), [Moonshot AI](https://www.moonshot.ai/), [SpaceXAI](https://x.ai/), and [Z.ai](https://z.ai/) for API credits supporting leaderboard evaluations.
-
-**Written by:** Steven Dillmann
-
-## Cite Terminal-Bench-Science
-
-<HowToCite />
