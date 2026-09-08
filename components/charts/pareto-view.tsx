@@ -470,7 +470,7 @@ export function ParetoView({ domain }: { domain: DomainId }) {
                 <SelectTrigger
                   size="sm"
                   aria-label="X axis metric"
-                  className="h-7 gap-1.5 bg-background px-2.5 text-xs font-medium uppercase tracking-[0.04em] text-foreground shadow-xs hover:bg-muted/60 dark:bg-card dark:hover:bg-muted/60"
+                  className="h-7 gap-1.5 bg-background px-2.5 text-sm text-foreground shadow-xs hover:bg-muted/60 dark:bg-card dark:hover:bg-muted/60"
                 >
                   <SelectValue>{xLabel}</SelectValue>
                 </SelectTrigger>
