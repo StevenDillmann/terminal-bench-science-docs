@@ -26,15 +26,19 @@ pip install 'harbor[modal]'
 
 ## Run Terminal-Bench-Science
 
+<VersionBlock versions={["0.1"]}>
+
 Terminal-Bench-Science 0.1 contains 70 tasks across the life, physical, earth, mathematical, and engineering sciences. We use Modal for our experiments, and you can also run the benchmark with other Harbor-supported environments, including Daytona. This release does not require GPUs.
 
 ```bash
-harbor run -d terminal-bench-science/terminal-bench-science@latest \
+harbor run -d terminal-bench-science/terminal-bench-science@v0.1 \
   -e modal \
   -a claude-code \
   -m anthropic/claude-opus-5 \
   -n 32
 ```
+
+</VersionBlock>
 
 ## Analyze results
 
@@ -56,6 +60,6 @@ harbor upload jobs/<name> # or harbor run ... --upload
 
 If you enjoy the benchmark or have feedback on how we can improve it, [join our Discord](https://discord.com/invite/2Pe5uWGcV3) and let us know in `#tb-science`, or contact [Steven Dillmann](mailto:stevendi@stanford.edu).
 
-## Cite Terminal-Bench-Science
+## Citation
 
 <HowToCite />

@@ -1,32 +1,31 @@
-'use client';
+"use client";
 
 import {
   ArrowDown01Icon,
   ArrowUp01Icon,
   ArrowUpDownIcon,
-  ArrowUpRight01Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { useQuery } from '@tanstack/react-query';
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useQuery } from "@tanstack/react-query";
 import type {
   Column,
   ColumnDef,
   OnChangeFn,
   VisibilityState,
-} from '@tanstack/react-table';
-import { useQueryState } from 'nuqs';
-import { useMemo } from 'react';
+} from "@tanstack/react-table";
+import { useQueryState } from "nuqs";
+import { useMemo } from "react";
 
-import { LeaderboardSkeleton } from '@/components/leaderboard/leaderboard-skeleton';
+import { LeaderboardSkeleton } from "@/components/leaderboard/leaderboard-skeleton";
 import {
   applyLeaderboardFilters,
   buildFilterFacets,
   LeaderboardToolbar,
   type LeaderboardFilters,
-} from '@/components/leaderboard/leaderboard-toolbar';
-import { DataTable } from '@/components/ui/data-table';
-import { ViewDescriptionBar } from '@/components/view-description-bar';
-import { ViewHeader } from '@/components/view-header';
+} from "@/components/leaderboard/leaderboard-toolbar";
+import { DataTable } from "@/components/ui/data-table";
+import { ViewDescriptionBar } from "@/components/view-description-bar";
+import { ViewHeader } from "@/components/view-header";
 import {
   TERMINAL_BENCH_LEADERBOARD,
   TERMINAL_BENCH_PACKAGE,
@@ -40,52 +39,43 @@ import {
   type LeaderboardColumn,
   type LeaderboardColumnType,
   type LeaderboardRow,
-} from '@/lib/leaderboard';
+} from "@/lib/leaderboard";
 import {
   domainExportTitle,
-  domainTasksUrl,
+  domainTaskCount,
   getDomain,
   type DomainId,
-} from '@/lib/domain-context';
-import { DOMAIN_ICONS } from '@/lib/domain-icons';
+} from "@/lib/domain-context";
+import { DOMAIN_ICONS } from "@/lib/domain-icons";
+import { ViewTitle } from "@/components/view-title";
 import {
   createExportClone,
   highResolutionExportScale,
   waitForExportImages,
-} from '@/lib/export-view';
+} from "@/lib/export-view";
 import {
   type PreparedExportImage,
   ViewExportMenu,
-} from '@/components/view-export-menu';
+} from "@/components/view-export-menu";
 import {
   fromUrlFilters,
   hiddenColumnsParser,
   leaderboardFiltersParser,
   toUrlFilters,
-} from '@/lib/leaderboard-url-state';
-import { cn } from '@/lib/utils';
+} from "@/lib/leaderboard-url-state";
+import { cn } from "@/lib/utils";
 
 const SORTABLE_COLUMN_IDS = new Set([
-  'accuracy',
-  'release_date',
-  'model_release_date',
-  'total_tokens',
-  'total_cost_usd',
+  "accuracy",
+  "release_date",
+  "model_release_date",
+  "total_tokens",
+  "total_cost_usd",
 ]);
-const TABLE_IMAGE_ID = 'leaderboard-table-image';
-
-/** Terminal-Bench-Science 0.1 task counts, used when no task matrix is served. */
-const DOMAIN_TASK_COUNTS: Record<DomainId, number> = {
-  all: 70,
-  life: 19,
-  physical: 17,
-  earth: 8,
-  mathematical: 17,
-  engineering: 9,
-};
+const TABLE_IMAGE_ID = "leaderboard-table-image";
 
 function isReleaseDateColumn(columnId: string): boolean {
-  return columnId === 'release_date' || columnId === 'model_release_date';
+  return columnId === "release_date" || columnId === "model_release_date";
 }
 
 function isSortableColumn(column: LeaderboardColumn): boolean {
@@ -96,7 +86,7 @@ function isSortableColumn(column: LeaderboardColumn): boolean {
 
 function compareDateValues(left: unknown, right: unknown): number {
   const toMs = (value: unknown) => {
-    if (typeof value !== 'string' || !value) return Number.NaN;
+    if (typeof value !== "string" || !value) return Number.NaN;
     return Date.parse(value);
   };
   const leftMs = toMs(left);
@@ -107,15 +97,15 @@ function compareDateValues(left: unknown, right: unknown): number {
   return leftMs - rightMs;
 }
 
-function alignClass(align?: LeaderboardColumn['align']) {
+function alignClass(align?: LeaderboardColumn["align"]) {
   switch (align) {
-    case 'center':
-      return 'text-center';
-    case 'right':
-      return 'text-right';
-    case 'left':
+    case "center":
+      return "text-center";
+    case "right":
+      return "text-right";
+    case "left":
     case undefined:
-      return 'text-left';
+      return "text-left";
     default: {
       const _exhaustive: never = align;
       return _exhaustive;
@@ -141,10 +131,10 @@ function LeaderboardCell({
   value: unknown;
   type: LeaderboardColumnType;
 }) {
-  if (value == null || value === '') return '—';
+  if (value == null || value === "") return "—";
 
   switch (type) {
-    case 'link': {
+    case "link": {
       const link = parseLeaderboardLink(value);
       if (!link) return formatLeaderboardCell(value, type);
       return (
@@ -159,12 +149,12 @@ function LeaderboardCell({
         </a>
       );
     }
-    case 'markdown':
+    case "markdown":
       return <>{renderMarkdownInline(String(value))}</>;
-    case 'boolean':
-    case 'number':
-    case 'date':
-    case 'text':
+    case "boolean":
+    case "number":
+    case "date":
+    case "text":
       return formatLeaderboardCell(value, type);
     default: {
       const _exhaustive: never = type;
@@ -183,22 +173,19 @@ function AccuracyBarCell({
   row: LeaderboardRow;
   accentColor: string;
 }) {
-  const accuracy = getAccessorValue(row, 'metrics.accuracy');
-  const stderr = getAccessorValue(row, 'metrics.accuracy_stderr');
-  const display = getAccessorValue(row, 'metrics.display_accuracy');
+  const accuracy = getAccessorValue(row, "metrics.accuracy");
+  const stderr = getAccessorValue(row, "metrics.accuracy_stderr");
+  const display = getAccessorValue(row, "metrics.display_accuracy");
 
   const value =
-    typeof accuracy === 'number' && !Number.isNaN(accuracy) ? accuracy : null;
-  const se =
-    typeof stderr === 'number' && !Number.isNaN(stderr) ? stderr : 0;
+    typeof accuracy === "number" && !Number.isNaN(accuracy) ? accuracy : null;
+  const se = typeof stderr === "number" && !Number.isNaN(stderr) ? stderr : 0;
   const half = ERROR_BAR_MULTIPLIER * se;
   const ciLower = value != null ? Math.max(0, value - half) : 0;
   const ciUpper = value != null ? Math.min(100, value + half) : 0;
 
   if (value == null) {
-    return (
-      <LeaderboardCell value={display ?? accuracy} type="markdown" />
-    );
+    return <LeaderboardCell value={display ?? accuracy} type="markdown" />;
   }
 
   // Label and bar share one interval: ±1 standard error, as the Hub's
@@ -249,14 +236,14 @@ function SortableHeader({
 }: {
   column: Column<LeaderboardRow, unknown>;
   label: string;
-  align?: LeaderboardColumn['align'];
+  align?: LeaderboardColumn["align"];
   accentColor: string;
 }) {
   const sorted = column.getIsSorted();
   const icon =
-    sorted === 'asc'
+    sorted === "asc"
       ? ArrowUp01Icon
-      : sorted === 'desc'
+      : sorted === "desc"
         ? ArrowDown01Icon
         : ArrowUpDownIcon;
 
@@ -264,27 +251,27 @@ function SortableHeader({
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 font-medium uppercase hover:text-foreground',
-        align === 'right' && 'ml-auto',
-        align === 'center' && 'mx-auto',
+        "inline-flex items-center gap-1.5 font-medium uppercase hover:text-foreground",
+        align === "right" && "ml-auto",
+        align === "center" && "mx-auto",
       )}
-      onClick={() => column.toggleSorting(sorted === 'asc')}
+      onClick={() => column.toggleSorting(sorted === "asc")}
     >
       <span>{label}</span>
       <HugeiconsIcon
         icon={icon}
         strokeWidth={2}
-        className={cn('size-3.5', !sorted && 'text-muted-foreground')}
+        className={cn("size-3.5", !sorted && "text-muted-foreground")}
         style={sorted ? { color: accentColor } : undefined}
       />
     </button>
   );
 }
 
-const HIDDEN_TABLE_COLUMN_IDS = new Set(['reasoning_effort']);
+const HIDDEN_TABLE_COLUMN_IDS = new Set(["reasoning_effort"]);
 
 function displayColumnHeader(column: LeaderboardColumn): string {
-  const label = column.id === 'accuracy' ? 'Resolution Rate' : column.header;
+  const label = column.id === "accuracy" ? "Resolution Rate" : column.header;
   return label.toUpperCase();
 }
 
@@ -293,21 +280,18 @@ function orderLeaderboardColumns(
   columns: LeaderboardColumn[],
 ): LeaderboardColumn[] {
   const byId = new Map(columns.map((column) => [column.id, column]));
-  if (!byId.has('agent_display') || !byId.has('model_display')) {
+  if (!byId.has("agent_display") || !byId.has("model_display")) {
     return columns;
   }
 
   const ordered: LeaderboardColumn[] = [];
   let emittedPair = false;
   for (const column of columns) {
-    if (
-      column.id === 'agent_display' ||
-      column.id === 'model_display'
-    ) {
+    if (column.id === "agent_display" || column.id === "model_display") {
       if (emittedPair) continue;
       emittedPair = true;
-      const model = byId.get('model_display');
-      const agent = byId.get('agent_display');
+      const model = byId.get("model_display");
+      const agent = byId.get("agent_display");
       if (model) ordered.push(model);
       if (agent) ordered.push(agent);
       continue;
@@ -318,30 +302,30 @@ function orderLeaderboardColumns(
 }
 
 function escapeTsv(value: string): string {
-  return value.replace(/[\t\r\n]+/g, ' ');
+  return value.replace(/[\t\r\n]+/g, " ");
 }
 
 function exportColumnHeader(column: LeaderboardColumn): string {
   switch (column.id) {
-    case 'accuracy':
-      return 'Resolution Rate (%)';
-    case 'total_cost_usd':
-      return 'Cost (USD)';
-    case 'total_tokens':
-      return 'Tokens';
+    case "accuracy":
+      return "Resolution Rate (%)";
+    case "total_cost_usd":
+      return "Cost (USD)";
+    case "total_tokens":
+      return "Tokens";
     default:
       return column.header;
   }
 }
 
 function formatConfidenceInterval(row: LeaderboardRow): string {
-  const stderr = getAccessorValue(row, 'metrics.accuracy_stderr');
-  if (typeof stderr !== 'number' || Number.isNaN(stderr)) return '—';
+  const stderr = getAccessorValue(row, "metrics.accuracy_stderr");
+  if (typeof stderr !== "number" || Number.isNaN(stderr)) return "—";
   return (ERROR_BAR_MULTIPLIER * stderr).toFixed(2);
 }
 
 function formatExportDate(value: unknown): string {
-  if (typeof value !== 'string') return String(value ?? '—');
+  if (typeof value !== "string") return String(value ?? "—");
   const date = /^(\d{4}-\d{2}-\d{2})/.exec(value);
   return date ? date[1] : value;
 }
@@ -351,11 +335,11 @@ function formatExportCell(
   column: LeaderboardColumn,
 ): string {
   const useRawValue = new Set([
-    'accuracy',
-    'total_cost_usd',
-    'total_tokens',
-    'release_date',
-    'model_release_date',
+    "accuracy",
+    "total_cost_usd",
+    "total_tokens",
+    "release_date",
+    "model_release_date",
   ]).has(column.id);
   const accessor =
     useRawValue || !column.display_accessor
@@ -368,7 +352,7 @@ function formatExportCell(
   return formatLeaderboardCell(
     value,
     useRawValue && !isReleaseDateColumn(column.id)
-      ? 'number'
+      ? "number"
       : (column.display_type ?? column.type),
   );
 }
@@ -394,8 +378,8 @@ function tableRowsToTsv(
     ...(includeRank
       ? [
           {
-            header: 'Rank',
-            value: (row: LeaderboardRow) => String(row.rank ?? '—'),
+            header: "Rank",
+            value: (row: LeaderboardRow) => String(row.rank ?? "—"),
           },
         ]
       : []),
@@ -406,19 +390,19 @@ function tableRowsToTsv(
       header: exportColumnHeader(column),
       value: (row) => escapeTsv(formatExportCell(row, column)),
     });
-    if (column.id === 'accuracy') {
+    if (column.id === "accuracy") {
       tsvColumns.push({
-        header: 'Std. error (± pp)',
+        header: "Std. error (± pp)",
         value: formatConfidenceInterval,
       });
     }
-    if (column.id === 'model_display') {
+    if (column.id === "model_display") {
       tsvColumns.push({
-        header: 'Reasoning Effort',
+        header: "Reasoning Effort",
         value: (row) => {
-          const effort = getAccessorValue(row, 'metadata.reasoning_effort');
+          const effort = getAccessorValue(row, "metadata.reasoning_effort");
           return escapeTsv(
-            typeof effort === 'string' && effort.trim() ? effort.trim() : '—',
+            typeof effort === "string" && effort.trim() ? effort.trim() : "—",
           );
         },
       });
@@ -430,14 +414,9 @@ function tableRowsToTsv(
     return tsvColumns.map((column) => column.value(row));
   });
 
-  return [
-    [domainExportTitle(domain, 'Leaderboard')],
-    [],
-    header,
-    ...lines,
-  ]
-    .map((line) => line.join('\t'))
-    .join('\n');
+  return [[domainExportTitle(domain, "Leaderboard")], [], header, ...lines]
+    .map((line) => line.join("\t"))
+    .join("\n");
 }
 
 function CopyLeaderboardActions({
@@ -471,13 +450,13 @@ function CopyLeaderboardActions({
       const fullTableWidth = Math.ceil(exportDataTable.scrollWidth);
       const exportWidth = Math.max(fullTableWidth, exportTable.offsetWidth);
       exportTable.style.width = `${exportWidth}px`;
-      exportTable.style.maxWidth = 'none';
-      exportTable.style.overflow = 'visible';
+      exportTable.style.maxWidth = "none";
+      exportTable.style.overflow = "visible";
       exportScrollArea.style.width = `${exportWidth}px`;
-      exportScrollArea.style.overflow = 'visible';
+      exportScrollArea.style.overflow = "visible";
       exportViewport.scrollLeft = 0;
       exportViewport.style.width = `${exportWidth}px`;
-      exportViewport.style.overflow = 'visible';
+      exportViewport.style.overflow = "visible";
       exportDataTable.style.width = `${exportWidth}px`;
       for (const scrollbar of exportTable.querySelectorAll(
         '[data-slot="scroll-area-scrollbar"]',
@@ -488,8 +467,8 @@ function CopyLeaderboardActions({
     for (const row of exportTable.querySelectorAll<HTMLElement>(
       'tbody [data-slot="table-row"]',
     )) {
-      row.removeAttribute('data-state');
-      row.style.backgroundColor = 'transparent';
+      row.removeAttribute("data-state");
+      row.style.backgroundColor = "transparent";
     }
     await waitForExportImages(exportTable);
     return {
@@ -519,13 +498,13 @@ function CopyLeaderboardActions({
  * Below 680px the columns shrink to content so the table squeezes together.
  */
 const STABLE_COLUMN_MIN_WIDTHS: Record<string, string> = {
-  model_display: 'min-w-[233px] max-[679px]:min-w-0',
-  agent_display: 'min-w-[224px] max-[679px]:min-w-0',
-  model_release_date: 'min-w-[169px] max-[679px]:min-w-0',
-  agent_org: 'min-w-[160px] max-[679px]:min-w-0',
-  model_org: 'min-w-[160px] max-[679px]:min-w-0',
-  total_tokens: 'min-w-[118px] max-[679px]:min-w-0',
-  total_cost_usd: 'min-w-[124px] max-[679px]:min-w-0',
+  model_display: "min-w-[233px] max-[679px]:min-w-0",
+  agent_display: "min-w-[224px] max-[679px]:min-w-0",
+  model_release_date: "min-w-[169px] max-[679px]:min-w-0",
+  agent_org: "min-w-[160px] max-[679px]:min-w-0",
+  model_org: "min-w-[160px] max-[679px]:min-w-0",
+  total_tokens: "min-w-[118px] max-[679px]:min-w-0",
+  total_cost_usd: "min-w-[124px] max-[679px]:min-w-0",
 };
 
 function buildColumns(
@@ -533,18 +512,18 @@ function buildColumns(
   accentColor: string,
 ): ColumnDef<LeaderboardRow>[] {
   const rankColumn: ColumnDef<LeaderboardRow> = {
-    id: 'rank',
-    header: 'RANK',
+    id: "rank",
+    header: "RANK",
     accessorFn: (row) => row.rank,
     cell: ({ row }) => (
       <span className="tabular-nums text-muted-foreground">
-        {row.original.rank ?? '—'}
+        {row.original.rank ?? "—"}
       </span>
     ),
     enableSorting: false,
     meta: {
-      headerClassName: 'w-12 text-center',
-      cellClassName: 'text-center',
+      headerClassName: "w-12 text-center",
+      cellClassName: "text-center",
     },
   };
 
@@ -552,8 +531,7 @@ function buildColumns(
     .filter((column) => !HIDDEN_TABLE_COLUMN_IDS.has(column.id))
     .map((column): ColumnDef<LeaderboardRow> => {
       const displayType = column.display_type ?? column.type;
-      const columnAlign =
-        column.id === 'accuracy' ? 'left' : column.align;
+      const columnAlign = column.id === "accuracy" ? "left" : column.align;
       const align = alignClass(columnAlign);
       const sortable = isSortableColumn(column);
       const headerLabel = displayColumnHeader(column);
@@ -575,13 +553,13 @@ function buildColumns(
             ? getAccessorValue(row.original, column.display_accessor)
             : getAccessorValue(row.original, column.accessor);
 
-          if (column.id === 'model_display') {
+          if (column.id === "model_display") {
             const effort = getAccessorValue(
               row.original,
-              'metadata.reasoning_effort',
+              "metadata.reasoning_effort",
             );
             const effortLabel =
-              typeof effort === 'string' && effort.trim()
+              typeof effort === "string" && effort.trim()
                 ? effort.trim()
                 : null;
             return (
@@ -596,32 +574,32 @@ function buildColumns(
             );
           }
 
-          if (column.id === 'accuracy') {
+          if (column.id === "accuracy") {
             return (
-              <AccuracyBarCell
-                row={row.original}
-                accentColor={accentColor}
-              />
+              <AccuracyBarCell row={row.original} accentColor={accentColor} />
             );
           }
 
           return <LeaderboardCell value={value} type={displayType} />;
         },
         enableSorting: sortable,
-        ...(column.type === 'date'
+        ...(column.type === "date"
           ? {
               sortingFn: (rowA, rowB, columnId) =>
-                compareDateValues(rowA.getValue(columnId), rowB.getValue(columnId)),
+                compareDateValues(
+                  rowA.getValue(columnId),
+                  rowB.getValue(columnId),
+                ),
             }
           : {}),
         meta: {
           headerClassName: align,
           cellClassName: cn(
             align,
-            column.type === 'number' && 'tabular-nums',
+            column.type === "number" && "tabular-nums",
             // Content columns pin to 1px (nowrap keeps them content-sized)
             // so extra table width widens the bar, not the gaps.
-            column.id === 'accuracy' ? 'xl:min-w-56' : 'xl:w-px',
+            column.id === "accuracy" ? "xl:min-w-56" : "xl:w-px",
             STABLE_COLUMN_MIN_WIDTHS[column.id],
           ),
         },
@@ -651,15 +629,10 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
   // Tasks in the selected domain. `metrics.tasks` counts trials (tasks ×
   // attempts), so count the task list itself, falling back to the release's
   // known sizes when the public payload has no task matrix.
-  const taskCount = useMemo(() => {
-    const tasks = data?.task_matrix?.tasks;
-    if (tasks?.length) {
-      return domain === 'all'
-        ? tasks.length
-        : tasks.filter((task) => task.domain === domain).length;
-    }
-    return DOMAIN_TASK_COUNTS[domain];
-  }, [data, domain]);
+  const taskCount = useMemo(
+    () => domainTaskCount(data?.task_matrix?.tasks, domain),
+    [data, domain],
+  );
 
   const facets = useMemo(() => {
     if (!data) {
@@ -673,11 +646,11 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
   }, [data, domainRows]);
 
   const [urlFilters, setUrlFilters] = useQueryState(
-    'filters',
+    "filters",
     leaderboardFiltersParser,
   );
   const [hiddenColumns, setHiddenColumns] = useQueryState(
-    'hide',
+    "hide",
     hiddenColumnsParser,
   );
 
@@ -702,7 +675,7 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
     updater,
   ) => {
     const next =
-      typeof updater === 'function' ? updater(columnVisibility) : updater;
+      typeof updater === "function" ? updater(columnVisibility) : updater;
     const hidden = Object.entries(next)
       .filter(([, visible]) => visible === false)
       .map(([id]) => id);
@@ -731,7 +704,7 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
   const columnOptions = useMemo(() => {
     if (!data) return [];
     return [
-      { id: 'rank', label: 'RANK', canHide: true },
+      { id: "rank", label: "RANK", canHide: true },
       ...orderLeaderboardColumns(data.leaderboard.columns)
         .filter((column) => !HIDDEN_TABLE_COLUMN_IDS.has(column.id))
         .map((column) => ({
@@ -757,7 +730,7 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
   if (error || !data) {
     return (
       <div className="-mx-4 rounded-none border border-x-0 border-destructive/30 bg-destructive/5 px-4 py-10 text-center text-sm text-destructive md:mx-0 md:rounded-xl md:border-x">
-        {error?.message ?? 'Failed to load leaderboard'}
+        {error?.message ?? "Failed to load leaderboard"}
       </div>
     );
   }
@@ -771,31 +744,11 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
         panelHeader={
           <ViewHeader
             title={
-              <>
-                Terminal-Bench-Science 0.1 Leaderboard
-                {domain !== 'all' ? (
-                  <>
-                    {' / '}
-                    <span>{domainDefinition.title}</span>
-                  </>
-                ) : null}
-                {' / '}
-                <a
-                  href={domainTasksUrl(domain)}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-export-plain
-                  className="inline-flex items-baseline gap-0.5 underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-current"
-                >
-                  {taskCount != null ? `${taskCount} tasks` : 'Tasks'}
-                  <HugeiconsIcon
-                    data-export-ignore
-                    icon={ArrowUpRight01Icon}
-                    strokeWidth={2}
-                    className="size-3 self-center"
-                  />
-                </a>
-              </>
+              <ViewTitle
+                view="Leaderboard"
+                domain={domain}
+                taskCount={taskCount}
+              />
             }
             icon={
               <DomainIcon
@@ -805,7 +758,7 @@ export function LeaderboardTable({ domain }: { domain: DomainId }) {
                 style={{ color: domainDefinition.color }}
               />
             }
-            exportIcon={domain !== 'all'}
+            exportIcon={domain !== "all"}
           />
         }
         headerClassName="border-b"

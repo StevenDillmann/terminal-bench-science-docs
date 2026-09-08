@@ -105,12 +105,16 @@ export const TERMINAL_BENCH_PACKAGE =
 /** Hub path is org/package/leaderboard — board name (not `main`). */
 export const TERMINAL_BENCH_LEADERBOARD = 'v0-1-eval';
 export const HARBOR_HUB_URL = 'https://hub.harborframework.com';
+/** Hub dataset page, tasks tab: every task across all domains. */
+export const HUB_TASKS_URL = `${HARBOR_HUB_URL}/datasets/terminal-bench-science/terminal-bench-science/latest?tab=tasks`;
 /** Benchmark versions selectable on the homepage (?version=<id>), newest first. */
 export type HomeBenchmark = {
   id: string;
   label: string;
   package: string;
   leaderboard: string;
+  /** Dataset reference for `harbor run -d`. */
+  runDataset: string;
 };
 
 export const HOME_BENCHMARKS: HomeBenchmark[] = [
@@ -119,6 +123,7 @@ export const HOME_BENCHMARKS: HomeBenchmark[] = [
     label: 'Terminal-Bench-Science 0.1',
     package: TERMINAL_BENCH_PACKAGE,
     leaderboard: TERMINAL_BENCH_LEADERBOARD,
+    runDataset: 'terminal-bench-science/terminal-bench-science@v0.1',
   },
 ];
 

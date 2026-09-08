@@ -1,5 +1,7 @@
 import { createParser } from 'nuqs';
 
+import { HUB_TASKS_URL } from '@/lib/leaderboard';
+
 import {
   ALL_DOMAIN_RADAR_AXES,
   DOMAIN_RADAR_SPOKE_AXES,
@@ -52,9 +54,6 @@ export function getDomain(domain: DomainId): DomainDefinition {
 const GITHUB_TASKS_BASE =
   'https://github.com/harbor-framework/terminal-bench-science/tree/main/tasks';
 
-/** Hub dataset page, tasks tab: every task across all domains. */
-const HUB_TASKS_URL =
-  'https://hub.harborframework.com/datasets/terminal-bench-science/terminal-bench-science/latest?tab=tasks';
 
 const DOMAIN_TASK_PATHS: Record<DomainId, string> = {
   all: HUB_TASKS_URL,
@@ -64,6 +63,32 @@ const DOMAIN_TASK_PATHS: Record<DomainId, string> = {
   mathematical: `${GITHUB_TASKS_BASE}/mathematical-sciences`,
   engineering: `${GITHUB_TASKS_BASE}/engineering-sciences`,
 };
+
+/** Terminal-Bench-Science 0.1 task counts, used when no task matrix is served. */
+export const DOMAIN_TASK_COUNTS: Record<DomainId, number> = {
+  all: 70,
+  life: 19,
+  physical: 17,
+  earth: 8,
+  mathematical: 17,
+  engineering: 9,
+};
+
+/**
+ * Tasks in a domain. Counts the served task list when there is one
+ * (`metrics.tasks` is trials, i.e. tasks × attempts), else the known sizes.
+ */
+export function domainTaskCount(
+  tasks: readonly { domain: string }[] | undefined,
+  domain: DomainId,
+): number {
+  if (tasks?.length) {
+    return domain === 'all'
+      ? tasks.length
+      : tasks.filter((task) => task.domain === domain).length;
+  }
+  return DOMAIN_TASK_COUNTS[domain];
+}
 
 export function domainTasksUrl(domain: DomainId): string {
   return DOMAIN_TASK_PATHS[domain];

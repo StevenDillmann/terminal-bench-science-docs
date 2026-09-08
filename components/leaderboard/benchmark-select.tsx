@@ -36,7 +36,9 @@ export function useHomeBenchmark(): {
 }
 
 /** Shared trigger look for the homepage select filters (matches tbench.ai). */
-export const HOME_SELECT_TRIGGER_CLASS = 'bg-background uppercase dark:bg-card';
+/** Same look as the Run page's version trigger: square, unfilled, tight. */
+export const HOME_SELECT_TRIGGER_CLASS =
+  'h-8 gap-1 rounded-none border border-input bg-transparent px-1.5 uppercase text-muted-foreground shadow-none transition-colors hover:text-foreground dark:bg-transparent dark:hover:bg-transparent [&_svg]:size-3.5';
 
 export function BenchmarkSelect() {
   const { benchmark, setBenchmarkId } = useHomeBenchmark();

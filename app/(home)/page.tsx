@@ -1,14 +1,21 @@
-import { Plus, Terminal } from 'lucide-react';
-import Link from 'next/link';
-import { Suspense } from 'react';
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
 
-import { HeroTitle } from '@/components/hero-title';
-import { CiteButton } from '@/components/cite-dialog';
-import { HomeView } from '@/components/home-view';
-import { ViewTasksLink } from '@/components/task-actions';
-import { buttonVariants } from '@/components/ui/button';
+import { HeroTitle } from "@/components/hero-title";
+import { CiteButton } from "@/components/cite-dialog";
+import { renderHighlightItems } from "@/components/highlights/render-highlights";
+import { HomeView } from "@/components/home-view";
+import {
+  RunBenchmarkLink,
+  RunBenchmarkLinkFallback,
+  ViewTasksLink,
+} from "@/components/task-actions";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function HomePage() {
+  // Highlights are hidden until the first real (non-example) entry lands.
+  const highlights = renderHighlightItems().filter((item) => !item.example);
   return (
     <div className="flex w-full min-w-0 flex-1 flex-col pt-12">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8">
@@ -21,17 +28,13 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Link
-              href="/run"
-              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
-            >
-              Run the benchmark
-              <Terminal className="size-4" strokeWidth={2} aria-hidden />
-            </Link>
+            <Suspense fallback={<RunBenchmarkLinkFallback />}>
+              <RunBenchmarkLink />
+            </Suspense>
             <ViewTasksLink />
             <Link
-              href="/contribution-call"
-              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
+              href="/contribute"
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
             >
               Contribute a task
               <Plus className="size-4" strokeWidth={2} aria-hidden />
@@ -46,7 +49,7 @@ export default function HomePage() {
               <div className="min-h-96 rounded-xl border bg-card" aria-hidden />
             }
           >
-            <HomeView />
+            <HomeView highlights={highlights} />
           </Suspense>
         </div>
       </div>

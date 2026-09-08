@@ -89,6 +89,11 @@ export function createExportClone(source: HTMLElement): {
   for (const ignored of clone.querySelectorAll('[data-export-ignore]')) {
     ignored.remove();
   }
+  // Elements kept for exports only (e.g. a static axis label under a control).
+  for (const only of clone.querySelectorAll<HTMLElement | SVGElement>('[data-export-only]')) {
+    only.classList.remove('hidden');
+    (only as HTMLElement).style.display = '';
+  }
   // Links rendered as plain text in exports (no underline).
   for (const plain of clone.querySelectorAll<HTMLElement>('[data-export-plain]')) {
     plain.style.textDecoration = 'none';

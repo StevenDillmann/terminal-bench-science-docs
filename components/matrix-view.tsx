@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { useQueryState } from 'nuqs';
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useQueryState } from "nuqs";
+import { useMemo, useState, type CSSProperties } from "react";
 
-import { chartRowLabel } from '@/components/charts/chart-labels';
+import { chartRowLabel } from "@/components/charts/chart-labels";
 import {
   applyLeaderboardFilters,
   buildFilterFacets,
   type LeaderboardFilters,
   LeaderboardToolbar,
-} from '@/components/leaderboard/leaderboard-toolbar';
+} from "@/components/leaderboard/leaderboard-toolbar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { ViewDescriptionBar } from '@/components/view-description-bar';
-import { ViewHeader } from '@/components/view-header';
+} from "@/components/ui/popover";
+import { ViewDescriptionBar } from "@/components/view-description-bar";
+import { ViewHeader } from "@/components/view-header";
 import {
   fromUrlFilters,
   leaderboardFiltersParser,
   toUrlFilters,
-} from '@/lib/leaderboard-url-state';
+} from "@/lib/leaderboard-url-state";
 import {
   type LeaderboardTrialLink,
   harborTrialUrl,
@@ -38,32 +38,34 @@ import {
   type LeaderboardRow,
   type LeaderboardTaskMatrix,
   type LeaderboardTaskOutcome,
-} from '@/lib/leaderboard';
+} from "@/lib/leaderboard";
 import {
   domainExportTitle,
+  domainTaskCount,
   getDomain,
   type DomainId,
-} from '@/lib/domain-context';
-import { DOMAIN_ICONS } from '@/lib/domain-icons';
+} from "@/lib/domain-context";
+import { DOMAIN_ICONS } from "@/lib/domain-icons";
+import { ViewTitle } from "@/components/view-title";
 import {
   createExportClone,
   highResolutionExportScale,
   waitForExportImages,
-} from '@/lib/export-view';
+} from "@/lib/export-view";
 import {
   type PreparedExportImage,
   ViewExportMenu,
-} from '@/components/view-export-menu';
+} from "@/components/view-export-menu";
 
-const MATRIX_IMAGE_ID = 'task-matrix-image';
-const MATRIX_SCROLL_ID = 'task-matrix-scroll';
+const MATRIX_IMAGE_ID = "task-matrix-image";
+const MATRIX_SCROLL_ID = "task-matrix-scroll";
 
 function contrastColor(color: string): string {
   const red = Number.parseInt(color.slice(1, 3), 16);
   const green = Number.parseInt(color.slice(3, 5), 16);
   const blue = Number.parseInt(color.slice(5, 7), 16);
   const luminance = (red * 299 + green * 587 + blue * 114) / 1_000;
-  return luminance > 150 ? '#111827' : '#ffffff';
+  return luminance > 150 ? "#111827" : "#ffffff";
 }
 
 function colorStrength(ratio: number): number {
@@ -109,18 +111,17 @@ function MatrixCell({
   const strength = colorStrength(ratio);
   const backgroundColor =
     ratio === 0
-      ? 'var(--card)'
+      ? "var(--card)"
       : `color-mix(in oklch, ${accentColor} ${strength}%, var(--card))`;
   const hoverBackgroundColor = `color-mix(in oklch, ${taskAccentColor} ${Math.max(
     strength,
     20,
   )}%, var(--card))`;
   const showColumnHighlight = columnHighlighted && ratio > 0;
-  const muteColumn =
-    anyColumnHighlighted && !columnHighlighted && ratio > 0;
+  const muteColumn = anyColumnHighlighted && !columnHighlighted && ratio > 0;
   const trialLinks = (outcome.trials ?? []).filter(
     (trial): trial is LeaderboardTrialLink & { job: string } =>
-      typeof trial.job === 'string' && trial.job.length > 0,
+      typeof trial.job === "string" && trial.job.length > 0,
   );
   // Without trial ids (public read), fall back to the Hub row page.
   const fallbackUrl = harborLeaderboardRowUrl(
@@ -130,7 +131,7 @@ function MatrixCell({
   );
   const summary = `${rowLabel} / ${task.slug}: ${outcome.solved}/${outcome.total} trials solved`;
   const cellStyle = {
-    '--matrix-cell-background': showColumnHighlight
+    "--matrix-cell-background": showColumnHighlight
       ? hoverBackgroundColor
       : backgroundColor,
     color:
@@ -138,18 +139,22 @@ function MatrixCell({
         ? contrastColor(taskAccentColor)
         : strength >= 50
           ? contrastColor(accentColor)
-          : 'var(--foreground)',
-    filter: muteColumn ? 'grayscale(1)' : undefined,
+          : "var(--foreground)",
+    filter: muteColumn ? "grayscale(1)" : undefined,
     opacity: muteColumn ? 0.4 : 1,
   } as CSSProperties;
   const cellClassName =
-    'h-11 w-11 min-w-11 max-w-11 border-r border-b bg-[var(--matrix-cell-background)] p-0 text-center text-[10px] font-medium tabular-nums transition-colors';
+    "h-11 w-11 min-w-11 max-w-11 border-r border-b bg-[var(--matrix-cell-background)] p-0 text-center text-[10px] font-medium tabular-nums transition-colors";
   const buttonClassName =
-    'flex h-full w-full cursor-pointer items-center justify-center hover:ring-1 hover:ring-inset hover:ring-foreground/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-foreground';
+    "flex h-full w-full cursor-pointer items-center justify-center hover:ring-1 hover:ring-inset hover:ring-foreground/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-foreground";
 
   if (trialLinks.length === 0) {
     return (
-      <td title={`${summary} — open on Harbor Hub`} className={cellClassName} style={cellStyle}>
+      <td
+        title={`${summary} — open on Harbor Hub`}
+        className={cellClassName}
+        style={cellStyle}
+      >
         <a
           href={fallbackUrl}
           target="_blank"
@@ -170,7 +175,10 @@ function MatrixCell({
         >
           {outcome.solved}/{outcome.total}
         </PopoverTrigger>
-        <PopoverContent align="center" className="w-auto min-w-48 gap-2 p-3 text-xs">
+        <PopoverContent
+          align="center"
+          className="w-auto min-w-48 gap-2 p-3 text-xs"
+        >
           <div className="min-w-0">
             <p className="truncate font-medium">{rowLabel}</p>
             <p className="truncate text-muted-foreground">{task.slug}</p>
@@ -187,10 +195,10 @@ function MatrixCell({
                   <span>Trial {index + 1}</span>
                   <span
                     className={
-                      trial.solved ? 'text-foreground' : 'text-muted-foreground'
+                      trial.solved ? "text-foreground" : "text-muted-foreground"
                     }
                   >
-                    {trial.solved ? 'solved' : 'failed'} ↗
+                    {trial.solved ? "solved" : "failed"} ↗
                   </span>
                 </a>
               </li>
@@ -212,12 +220,12 @@ function TaskHeader({
   onColumnHover: (taskId: string | null) => void;
 }) {
   const domain = getDomain(task.domain);
-  const label = task.slug.split('/').at(-1) ?? task.slug;
+  const label = task.slug.split("/").at(-1) ?? task.slug;
   return (
     <th
       scope="col"
       className="group relative h-56 w-11 min-w-11 max-w-11 overflow-visible border-b p-0 align-bottom"
-      style={{ '--task-label-accent': domain.color } as CSSProperties}
+      style={{ "--task-label-accent": domain.color } as CSSProperties}
       onMouseEnter={() => onColumnHover(task.id)}
       onMouseLeave={() => onColumnHover(null)}
     >
@@ -239,9 +247,11 @@ function TaskHeader({
 }
 
 function escapeTsv(value: string): string {
-  return value.replaceAll('\t', ' ').replaceAll('\r', ' ').replaceAll('\n', ' ');
+  return value
+    .replaceAll("\t", " ")
+    .replaceAll("\r", " ")
+    .replaceAll("\n", " ");
 }
-
 
 function matrixTotals(
   outcomes: Record<string, LeaderboardTaskOutcome>,
@@ -284,7 +294,7 @@ function matrixResolutionStderr(
 
 function numericMetric(row: LeaderboardRow, accessor: string): number {
   const value = getAccessorValue(row, accessor);
-  return typeof value === 'number' && Number.isFinite(value)
+  return typeof value === "number" && Number.isFinite(value)
     ? value
     : Number.POSITIVE_INFINITY;
 }
@@ -302,14 +312,14 @@ function compareMetric(
 function matrixToTsv(
   rows: LeaderboardRow[],
   tasks: LeaderboardMatrixTask[],
-  outcomes: LeaderboardTaskMatrix['rows'],
+  outcomes: LeaderboardTaskMatrix["rows"],
   domain: DomainId,
 ): string {
   const header = [
-    'Model',
-    'Agent',
-    'Resolution Rate (%)',
-    'Std. error (± pp)',
+    "Model",
+    "Agent",
+    "Resolution Rate (%)",
+    "Std. error (± pp)",
     ...tasks.map((task) => task.slug),
   ];
   const lines = rows.map((row) => {
@@ -320,23 +330,18 @@ function matrixToTsv(
     return [
       escapeTsv(label.model),
       escapeTsv(label.agent),
-      resolutionRate == null ? '' : resolutionRate.toFixed(2),
-      ci95 == null ? '' : ci95.toFixed(2),
+      resolutionRate == null ? "" : resolutionRate.toFixed(2),
+      ci95 == null ? "" : ci95.toFixed(2),
       ...tasks.map((task) => {
         const outcome = rowOutcomes[task.id];
-        return outcome ? `${outcome.solved}/${outcome.total}` : '';
+        return outcome ? `${outcome.solved}/${outcome.total}` : "";
       }),
     ];
   });
 
-  return [
-    [domainExportTitle(domain, 'Task Matrix')],
-    [],
-    header,
-    ...lines,
-  ]
-    .map((line) => line.join('\t'))
-    .join('\n');
+  return [[domainExportTitle(domain, "Task Matrix")], [], header, ...lines]
+    .map((line) => line.join("\t"))
+    .join("\n");
 }
 
 function CopyMatrixActions({
@@ -348,50 +353,50 @@ function CopyMatrixActions({
 }: {
   rows: LeaderboardRow[];
   tasks: LeaderboardMatrixTask[];
-  outcomes: LeaderboardTaskMatrix['rows'];
+  outcomes: LeaderboardTaskMatrix["rows"];
   domain: DomainId;
   accentColor: string;
 }) {
   async function prepareImage(): Promise<PreparedExportImage | null> {
     const matrix = document.getElementById(MATRIX_IMAGE_ID);
     const scrollRegion = document.getElementById(MATRIX_SCROLL_ID);
-    const table = scrollRegion?.querySelector('table');
+    const table = scrollRegion?.querySelector("table");
     if (!matrix || !scrollRegion || !table) return null;
 
     const { element: exportMatrix, remove } = createExportClone(matrix);
     const exportScrollRegion = exportMatrix.querySelector<HTMLElement>(
       `#${MATRIX_SCROLL_ID}`,
     );
-    const exportTable = exportScrollRegion?.querySelector('table');
+    const exportTable = exportScrollRegion?.querySelector("table");
     if (!exportScrollRegion || !exportTable) {
       remove();
-      throw new Error('Could not prepare matrix image.');
+      throw new Error("Could not prepare matrix image.");
     }
 
     try {
       await waitForExportImages(exportMatrix);
       exportScrollRegion.scrollLeft = 0;
-      exportScrollRegion.style.maxHeight = 'none';
-      exportScrollRegion.style.overflow = 'visible';
-      exportMatrix.style.maxWidth = 'none';
-      exportMatrix.style.overflow = 'visible';
-      const exportHeader = exportMatrix.querySelector<HTMLElement>('header');
+      exportScrollRegion.style.maxHeight = "none";
+      exportScrollRegion.style.overflow = "visible";
+      exportMatrix.style.maxWidth = "none";
+      exportMatrix.style.overflow = "visible";
+      const exportHeader = exportMatrix.querySelector<HTMLElement>("header");
       const exportLogo =
-        exportHeader?.querySelector<HTMLElement>('[data-export-logo]');
+        exportHeader?.querySelector<HTMLElement>("[data-export-logo]");
       const exportTitle = exportHeader?.firstElementChild as HTMLElement | null;
       if (exportHeader && exportLogo) {
-        exportHeader.style.position = 'relative';
-        exportHeader.style.flexWrap = 'nowrap';
-        exportHeader.style.minHeight = '52px';
-        exportLogo.style.position = 'absolute';
-        exportLogo.style.top = '10px';
-        exportLogo.style.right = '16px';
-        if (exportTitle) exportTitle.style.paddingRight = '184px';
+        exportHeader.style.position = "relative";
+        exportHeader.style.flexWrap = "nowrap";
+        exportHeader.style.minHeight = "52px";
+        exportLogo.style.position = "absolute";
+        exportLogo.style.top = "10px";
+        exportLogo.style.right = "16px";
+        if (exportTitle) exportTitle.style.paddingRight = "184px";
       }
       for (const element of exportMatrix.querySelectorAll<HTMLElement>(
-        '[data-matrix-sticky]',
+        "[data-matrix-sticky]",
       )) {
-        element.style.position = 'static';
+        element.style.position = "static";
       }
 
       await new Promise<void>((resolve) =>
@@ -402,7 +407,7 @@ function CopyMatrixActions({
         exportTable.getBoundingClientRect().right,
         ...[
           ...exportMatrix.querySelectorAll<HTMLElement>(
-            '[data-matrix-task-label]',
+            "[data-matrix-task-label]",
           ),
         ].map((label) => label.getBoundingClientRect().right),
       );
@@ -447,6 +452,11 @@ export function MatrixView({ domain }: { domain: DomainId }) {
     queryFn: () =>
       fetchLeaderboard(TERMINAL_BENCH_PACKAGE, TERMINAL_BENCH_LEADERBOARD),
   });
+
+  const taskCount = useMemo(
+    () => domainTaskCount(data?.task_matrix?.tasks, domain),
+    [data, domain],
+  );
   const domainRows = useMemo(
     () => (data ? projectLeaderboardRowsToDomain(data.rows, domain) : []),
     [data, domain],
@@ -458,7 +468,7 @@ export function MatrixView({ domain }: { domain: DomainId }) {
     return buildFilterFacets(data.leaderboard.columns, domainRows);
   }, [data, domainRows]);
   const [urlFilters, setUrlFilters] = useQueryState(
-    'filters',
+    "filters",
     leaderboardFiltersParser,
   );
   const filters = useMemo(
@@ -477,7 +487,7 @@ export function MatrixView({ domain }: { domain: DomainId }) {
   const tasks = useMemo(
     () =>
       (data?.task_matrix?.tasks ?? []).filter(
-        (task) => domain === 'all' || task.domain === domain,
+        (task) => domain === "all" || task.domain === domain,
       ),
     [data, domain],
   );
@@ -492,14 +502,10 @@ export function MatrixView({ domain }: { domain: DomainId }) {
       const rateDelta = rightRate - leftRate;
       if (rateDelta !== 0) return rateDelta;
 
-      const costDelta = compareMetric(
-        left,
-        right,
-        'metrics.total_cost_usd',
-      );
+      const costDelta = compareMetric(left, right, "metrics.total_cost_usd");
       if (costDelta !== 0) return costDelta;
 
-      const tokenDelta = compareMetric(left, right, 'metrics.total_tokens');
+      const tokenDelta = compareMetric(left, right, "metrics.total_tokens");
       return tokenDelta || left.id.localeCompare(right.id);
     });
   }, [data, filteredRows, tasks]);
@@ -544,7 +550,7 @@ export function MatrixView({ domain }: { domain: DomainId }) {
       <div className="flex w-full min-w-0 flex-col gap-1.5">
         <div className="flex items-center justify-end">{toolbar}</div>
         <div className="-mx-4 rounded-none border border-x-0 border-destructive/30 bg-destructive/5 px-4 py-10 text-center text-sm text-destructive md:mx-0 md:rounded-xl md:border-x">
-          {error?.message ?? 'Failed to load task matrix'}
+          {error?.message ?? "Failed to load task matrix"}
         </div>
       </div>
     );
@@ -568,17 +574,11 @@ export function MatrixView({ domain }: { domain: DomainId }) {
       >
         <ViewHeader
           title={
-            <>
-              Terminal-Bench-Science 0.1 Task Matrix
-              {domain !== 'all' ? (
-                <>
-                  {' / '}
-                  <span data-export-domain-accent={domainDefinition.color}>
-                    {domainDefinition.title}
-                  </span>
-                </>
-              ) : null}
-            </>
+            <ViewTitle
+              view="Task Matrix"
+              domain={domain}
+              taskCount={taskCount}
+            />
           }
           icon={
             <DomainIcon
@@ -588,25 +588,19 @@ export function MatrixView({ domain }: { domain: DomainId }) {
               style={{ color: domainDefinition.color }}
             />
           }
-          exportIcon={domain !== 'all'}
+          exportIcon={domain !== "all"}
         />
         {tasks.length === 0 || matrixRows.length === 0 ? (
           <p className="px-4 py-16 text-center text-sm text-muted-foreground">
             No matrix results match the current domain and filters.
           </p>
         ) : (
-          <div
-            id={MATRIX_SCROLL_ID}
-            className="overflow-auto"
-          >
+          <div id={MATRIX_SCROLL_ID} className="overflow-auto">
             <table
               className="table-fixed border-separate border-spacing-0"
               style={{ width: 288 + tasks.length * 44 + 80 }}
             >
-              <thead
-                data-matrix-sticky
-                className="sticky top-0 z-20 bg-card"
-              >
+              <thead data-matrix-sticky className="sticky top-0 z-20 bg-card">
                 <tr>
                   <th
                     scope="col"
@@ -650,22 +644,23 @@ export function MatrixView({ domain }: { domain: DomainId }) {
                             {label.model}
                             {label.reasoningEffort ? (
                               <span className="font-normal text-muted-foreground">
-                                {' '}({label.reasoningEffort})
+                                {" "}
+                                ({label.reasoningEffort})
                               </span>
                             ) : null}
                           </span>
                           <span className="shrink-0 text-xs font-medium tabular-nums">
                             {resolutionRate == null
-                              ? '—'
+                              ? "—"
                               : `${resolutionRate.toFixed(1)}%`}
                           </span>
                         </span>
                         <span className="flex items-center justify-between gap-3">
                           <span className="block max-w-40 truncate text-[10px] font-normal text-muted-foreground">
-                            {label.agent ?? ''}
+                            {label.agent ?? ""}
                           </span>
                           <span className="shrink-0 text-[10px] font-normal tabular-nums text-muted-foreground">
-                            {ci95 == null ? '' : `± ${ci95.toFixed(1)}%`}
+                            {ci95 == null ? "" : `± ${ci95.toFixed(1)}%`}
                           </span>
                         </span>
                       </th>
@@ -693,8 +688,8 @@ export function MatrixView({ domain }: { domain: DomainId }) {
           </div>
         )}
         <ViewDescriptionBar>
-          Resolution rates for individual tasks. Click a task name to open
-          it on the Harbor Hub, or a cell to open its trials.
+          Resolution rates for individual tasks. Click a task name to open it on
+          the Harbor Hub, or a cell to open its trials.
         </ViewDescriptionBar>
       </div>
     </div>

@@ -1,21 +1,30 @@
-'use client';
+"use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
-import { chartRowLabel, type ChartRowLabel } from '@/components/charts/chart-labels';
+import {
+  chartRowLabel,
+  type ChartRowLabel,
+} from "@/components/charts/chart-labels";
 import {
   PARETO_AXES,
   type ParetoAxisDef,
   type ParetoAxisId,
-} from '@/components/charts/pareto-axes';
+} from "@/components/charts/pareto-axes";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { getDomain, type DomainId } from '@/lib/domain-context';
-import { getAccessorValue, type LeaderboardRow } from '@/lib/leaderboard';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/tooltip";
+import { getDomain, type DomainId } from "@/lib/domain-context";
+import { getAccessorValue, type LeaderboardRow } from "@/lib/leaderboard";
+import { cn } from "@/lib/utils";
 
 export type ParetoDatum = {
   id: string;
@@ -29,7 +38,7 @@ export type ParetoDatum = {
   accuracyStderr: number | null;
   onFrontier: boolean;
   /** Force the label to one side of the marker (defaults to position-based). */
-  labelSide?: 'left' | 'right';
+  labelSide?: "left" | "right";
   /** Vertical nudge for the label in px (positive moves it down). */
   labelOffsetY?: number;
   /** When false, render the point but hide its model/agent label. */
@@ -80,17 +89,17 @@ function axisTicks(
   const maxV = Math.max(...values);
   const pad = (maxV - minV) * padRatio || Math.abs(maxV) * 0.05 || 1;
 
-  if (axisId === 'release_date') {
+  if (axisId === "release_date") {
     const day = 24 * 60 * 60 * 1000;
     return dateTicks(minV - day * 2, maxV + day * 2, 5);
   }
 
   let lo = minV - pad;
   let hi = maxV + pad;
-  if (axisId === 'accuracy') {
+  if (axisId === "accuracy") {
     lo = Math.max(0, lo);
     hi = Math.min(100, hi);
-  } else if (axisId === 'cost' || axisId === 'tokens') {
+  } else if (axisId === "cost" || axisId === "tokens") {
     lo = Math.max(0, lo);
   }
 
@@ -100,21 +109,21 @@ function axisTicks(
 function isBetterOrEqual(
   a: number,
   b: number,
-  prefer: ParetoAxisDef['prefer'],
+  prefer: ParetoAxisDef["prefer"],
 ): boolean {
-  return prefer === 'max' ? a >= b : a <= b;
+  return prefer === "max" ? a >= b : a <= b;
 }
 
 function isStrictlyBetter(
   a: number,
   b: number,
-  prefer: ParetoAxisDef['prefer'],
+  prefer: ParetoAxisDef["prefer"],
 ): boolean {
-  return prefer === 'max' ? a > b : a < b;
+  return prefer === "max" ? a > b : a < b;
 }
 
 export function computeParetoFrontier(
-  points: Omit<ParetoDatum, 'onFrontier'>[],
+  points: Omit<ParetoDatum, "onFrontier">[],
   xAxis: ParetoAxisDef,
   yAxis: ParetoAxisDef,
 ): Set<string> {
@@ -146,13 +155,10 @@ export function buildParetoData(
       const x = xAxis.read(row);
       const y = yAxis.read(row);
       if (x == null || y == null) return null;
-      const accuracyStderr = getAccessorValue(
-        row,
-        'metrics.accuracy_stderr',
-      );
+      const accuracyStderr = getAccessorValue(row, "metrics.accuracy_stderr");
       const reasoningEffort = getAccessorValue(
         row,
-        'metadata.reasoning_effort',
+        "metadata.reasoning_effort",
       );
       const cost = PARETO_AXES.cost.read(row);
       const tokens = PARETO_AXES.tokens.read(row);
@@ -161,7 +167,7 @@ export function buildParetoData(
         id: row.id,
         label: chartRowLabel(row),
         reasoningEffort:
-          typeof reasoningEffort === 'string' && reasoningEffort.trim()
+          typeof reasoningEffort === "string" && reasoningEffort.trim()
             ? reasoningEffort.trim()
             : null,
         cost,
@@ -170,12 +176,12 @@ export function buildParetoData(
         x,
         y,
         accuracyStderr:
-          typeof accuracyStderr === 'number' && !Number.isNaN(accuracyStderr)
+          typeof accuracyStderr === "number" && !Number.isNaN(accuracyStderr)
             ? accuracyStderr
             : null,
       };
     })
-    .filter((row): row is Omit<ParetoDatum, 'onFrontier'> => row != null);
+    .filter((row): row is Omit<ParetoDatum, "onFrontier"> => row != null);
 
   const frontier = computeParetoFrontier(points, xAxis, yAxis);
   return points
@@ -196,6 +202,8 @@ type ParetoScatterChartProps = {
   id?: string;
   height?: number;
   showNonFrontierLabels?: boolean;
+  /** Interactive replacement for the x-axis label (e.g. a metric select). */
+  xAxisControl?: ReactNode;
 };
 
 type ActiveTip = {
@@ -213,6 +221,132 @@ type ActiveTip = {
   onFrontier: boolean;
 };
 
+type LabelSide = "left" | "right";
+type LabelPlacement = { side: LabelSide; offsetY: number; hidden: boolean };
+type Box = { x0: number; y0: number; x1: number; y1: number };
+
+const LABEL_CHAR_W = 6.6; // ≈ 12px mono-ish glyph
+const AGENT_CHAR_W = 5.5; // ≈ 10px
+const LABEL_LINE_H = 12;
+const LABEL_OFFSETS = [0, 14, -14, 26, -26];
+
+function overlaps(a: Box, b: Box): boolean {
+  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+}
+
+function labelBox(
+  cx: number,
+  cy: number,
+  half: number,
+  side: LabelSide,
+  offsetY: number,
+  modelText: string,
+  agentText: string | null | undefined,
+): Box {
+  const w =
+    Math.max(
+      modelText.length * LABEL_CHAR_W,
+      (agentText?.length ?? 0) * AGENT_CHAR_W,
+    ) + 4;
+  const h = agentText ? LABEL_LINE_H * 2 + 2 : LABEL_LINE_H + 2;
+  const baseline = (agentText ? cy - 2 : cy + 4) + offsetY;
+  const y0 = baseline - 11;
+  const x0 = side === "left" ? cx - half - 6 - w : cx + half + 6;
+  return { x0, y0, x1: x0 + w, y1: y0 + h };
+}
+
+/**
+ * Greedy label placement: frontier labels and every marker are fixed
+ * obstacles; off-frontier labels try a few vertical nudges on their default
+ * side, then the other side, and hide if nothing fits inside the SVG.
+ */
+function placeLabels(
+  data: ParetoDatum[],
+  xScale: (v: number) => number,
+  yScale: (v: number) => number,
+  defaultSide: (cx: number) => LabelSide,
+  width: number,
+): Map<string, LabelPlacement> {
+  const placements = new Map<string, LabelPlacement>();
+  const occupied: Box[] = [];
+  const halfOf = (d: ParetoDatum) =>
+    d.onFrontier ? FRONTIER_DOT_HALF : DOT_HALF;
+
+  for (const d of data) {
+    const cx = xScale(d.x);
+    const cy = yScale(d.y);
+    const half = halfOf(d) + 2;
+    occupied.push({
+      x0: cx - half,
+      y0: cy - half,
+      x1: cx + half,
+      y1: cy + half,
+    });
+  }
+
+  const fixed = data.filter(
+    (d) => d.onFrontier || d.labelSide != null || d.labelOffsetY != null,
+  );
+  const free = data.filter((d) => !fixed.includes(d));
+
+  for (const d of fixed) {
+    const cx = xScale(d.x);
+    const cy = yScale(d.y);
+    const side = d.labelSide ?? defaultSide(cx);
+    const offsetY = d.labelOffsetY ?? 0;
+    placements.set(d.id, { side, offsetY, hidden: d.showLabel === false });
+    if (d.showLabel !== false) {
+      occupied.push(
+        labelBox(
+          cx,
+          cy,
+          halfOf(d),
+          side,
+          offsetY,
+          d.label.model,
+          d.label.agent,
+        ),
+      );
+    }
+  }
+
+  const inBounds = (b: Box) => b.x0 >= 0 && b.x1 <= width;
+  for (const d of [...free].sort((a, b) => yScale(a.y) - yScale(b.y))) {
+    const cx = xScale(d.x);
+    const cy = yScale(d.y);
+    const preferred = defaultSide(cx);
+    const sides: LabelSide[] = [
+      preferred,
+      preferred === "left" ? "right" : "left",
+    ];
+    let chosen: LabelPlacement | null = null;
+    for (const side of sides) {
+      for (const offsetY of LABEL_OFFSETS) {
+        const box = labelBox(
+          cx,
+          cy,
+          halfOf(d),
+          side,
+          offsetY,
+          d.label.model,
+          d.label.agent,
+        );
+        if (inBounds(box) && !occupied.some((o) => overlaps(o, box))) {
+          chosen = { side, offsetY, hidden: false };
+          occupied.push(box);
+          break;
+        }
+      }
+      if (chosen) break;
+    }
+    placements.set(
+      d.id,
+      chosen ?? { side: preferred, offsetY: 0, hidden: true },
+    );
+  }
+  return placements;
+}
+
 export function ParetoScatterChart({
   data,
   xAxisId,
@@ -223,6 +357,7 @@ export function ParetoScatterChart({
   id,
   height = DEFAULT_HEIGHT,
   showNonFrontierLabels = false,
+  xAxisControl,
 }: ParetoScatterChartProps) {
   const plotRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(MIN_WIDTH);
@@ -248,11 +383,11 @@ export function ParetoScatterChart({
     const observer = new ResizeObserver(update);
     observer.observe(el);
     const frame = window.requestAnimationFrame(update);
-    window.addEventListener('resize', update);
+    window.addEventListener("resize", update);
     return () => {
       observer.disconnect();
       window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', update);
+      window.removeEventListener("resize", update);
     };
   }, [data.length]);
 
@@ -290,315 +425,352 @@ export function ParetoScatterChart({
   const yScale = (value: number) =>
     MARGIN.top + (1 - (value - yMin) / (yMax - yMin || 1)) * plotH;
 
+  const defaultLabelSide = (cx: number): LabelSide =>
+    cx > MARGIN.left + plotW * 0.9 ? "left" : "right";
+  const labelPlacements = placeLabels(
+    data,
+    xScale,
+    yScale,
+    defaultLabelSide,
+    width,
+  );
+
   const frontier = data.filter((d) => d.onFrontier).sort((a, b) => a.x - b.x);
   const frontierPath = frontier
-    .map((d, i) => `${i === 0 ? 'M' : 'L'} ${xScale(d.x)} ${yScale(d.y)}`)
-    .join(' ');
+    .map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.x)} ${yScale(d.y)}`)
+    .join(" ");
 
   return (
-    <div id={id} className={cn('w-full min-w-0', className)}>
-      <div ref={plotRef} className="relative w-full overflow-hidden" style={{ height }}>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        width={width}
-        height={height}
-        role="img"
-        aria-label={`Pareto scatter of ${yAxis.label} versus ${xAxis.label} for ${domainDefinition.title}`}
-        className="block max-w-full"
+    <div id={id} className={cn("w-full min-w-0", className)}>
+      <div
+        ref={plotRef}
+        className="relative w-full overflow-hidden"
+        style={{ height }}
       >
-        {xTicks.slice(1, -1).map((tick) => (
-          <line
-            key={`x-grid-${tick}`}
-            x1={xScale(tick)}
-            y1={MARGIN.top}
-            x2={xScale(tick)}
-            y2={MARGIN.top + plotH}
-            className="stroke-border"
-            strokeWidth={1}
-          />
-        ))}
-        {yTicks.slice(1, -1).map((tick) => (
-          <line
-            key={`y-grid-${tick}`}
-            x1={MARGIN.left}
-            y1={yScale(tick)}
-            x2={MARGIN.left + plotW}
-            y2={yScale(tick)}
-            className="stroke-border"
-            strokeWidth={1}
-          />
-        ))}
-
-        <line
-          x1={MARGIN.left}
-          y1={MARGIN.top + plotH}
-          x2={MARGIN.left + plotW}
-          y2={MARGIN.top + plotH}
-          className="stroke-muted-foreground/40"
-          strokeWidth={1}
-        />
-        <line
-          x1={MARGIN.left}
-          y1={MARGIN.top}
-          x2={MARGIN.left}
-          y2={MARGIN.top + plotH}
-          className="stroke-muted-foreground/40"
-          strokeWidth={1}
-        />
-
-        {xTicks.map((tick) => (
-          <text
-            key={`x-label-${tick}`}
-            x={xScale(tick)}
-            y={MARGIN.top + plotH + 20}
-            textAnchor="middle"
-            className="fill-muted-foreground font-normal"
-            fontSize={12}
-          >
-            {xAxis.format(tick)}
-          </text>
-        ))}
-        {yTicks.map((tick) => (
-          <text
-            key={`y-label-${tick}`}
-            x={MARGIN.left - 12}
-            y={yScale(tick)}
-            textAnchor="end"
-            dominantBaseline="central"
-            className="fill-muted-foreground font-normal"
-            fontSize={12}
-          >
-            {yAxis.format(tick)}
-          </text>
-        ))}
-
-        <text
-          x={MARGIN.left + plotW / 2}
-          y={height - 12}
-          textAnchor="middle"
-          className="fill-muted-foreground font-normal"
-          fontSize={12}
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          width={width}
+          height={height}
+          role="img"
+          aria-label={`Pareto scatter of ${yAxis.label} versus ${xAxis.label} for ${domainDefinition.title}`}
+          className="block max-w-full"
         >
-          {xAxis.label}
-        </text>
-        <g transform={`translate(16 ${MARGIN.top + plotH / 2}) rotate(-90)`}>
+          {xTicks.slice(1, -1).map((tick) => (
+            <line
+              key={`x-grid-${tick}`}
+              x1={xScale(tick)}
+              y1={MARGIN.top}
+              x2={xScale(tick)}
+              y2={MARGIN.top + plotH}
+              className="stroke-border"
+              strokeWidth={1}
+            />
+          ))}
+          {yTicks.slice(1, -1).map((tick) => (
+            <line
+              key={`y-grid-${tick}`}
+              x1={MARGIN.left}
+              y1={yScale(tick)}
+              x2={MARGIN.left + plotW}
+              y2={yScale(tick)}
+              className="stroke-border"
+              strokeWidth={1}
+            />
+          ))}
+
+          <line
+            x1={MARGIN.left}
+            y1={MARGIN.top + plotH}
+            x2={MARGIN.left + plotW}
+            y2={MARGIN.top + plotH}
+            className="stroke-muted-foreground/40"
+            strokeWidth={1}
+          />
+          <line
+            x1={MARGIN.left}
+            y1={MARGIN.top}
+            x2={MARGIN.left}
+            y2={MARGIN.top + plotH}
+            className="stroke-muted-foreground/40"
+            strokeWidth={1}
+          />
+
+          {xTicks.map((tick) => (
+            <text
+              key={`x-label-${tick}`}
+              x={xScale(tick)}
+              y={MARGIN.top + plotH + 20}
+              textAnchor="middle"
+              className="fill-muted-foreground font-normal"
+              fontSize={12}
+            >
+              {xAxis.format(tick)}
+            </text>
+          ))}
+          {yTicks.map((tick) => (
+            <text
+              key={`y-label-${tick}`}
+              x={MARGIN.left - 12}
+              y={yScale(tick)}
+              textAnchor="end"
+              dominantBaseline="central"
+              className="fill-muted-foreground font-normal"
+              fontSize={12}
+            >
+              {yAxis.format(tick)}
+            </text>
+          ))}
+
           <text
+            x={MARGIN.left + plotW / 2}
+            y={height - 12}
             textAnchor="middle"
-            dominantBaseline="central"
-            className="fill-muted-foreground font-normal"
+            // With a control overlaid, the static label only shows in exports.
+            data-export-only={xAxisControl ? "" : undefined}
+            className={cn(
+              "fill-muted-foreground font-normal",
+              xAxisControl && "hidden",
+            )}
             fontSize={12}
           >
-            {yAxis.label}
+            {xAxis.label}
           </text>
-        </g>
+          <g transform={`translate(16 ${MARGIN.top + plotH / 2}) rotate(-90)`}>
+            <text
+              textAnchor="middle"
+              dominantBaseline="central"
+              className="fill-muted-foreground font-normal"
+              fontSize={12}
+            >
+              {yAxis.label}
+            </text>
+          </g>
 
-        {frontierPath ? (
-          <path
-            d={frontierPath}
-            fill="none"
-            stroke={accentColor}
-            strokeWidth={2}
-          />
-        ) : null}
+          {frontierPath ? (
+            <path
+              d={frontierPath}
+              fill="none"
+              stroke={accentColor}
+              strokeWidth={2}
+            />
+          ) : null}
 
-        {data.map((datum) => {
-          const cx = xScale(datum.x);
-          const cy = yScale(datum.y);
-          const half = datum.onFrontier ? FRONTIER_DOT_HALF : DOT_HALF;
-          const size = half * 2;
-          const modelText = datum.label.model;
-          const agentText = datum.label.agent;
-          const labelOnLeft = datum.labelSide
-            ? datum.labelSide === 'left'
-            : cx > MARGIN.left + plotW * 0.75;
-          const labelX = labelOnLeft ? cx - half - 6 : cx + half + 6;
-          const ciHalf =
-            datum.accuracyStderr != null && datum.accuracyStderr > 0
-              ? ERROR_BAR_MULTIPLIER * datum.accuracyStderr
-              : null;
-          return (
-            <g key={datum.id}>
-              {/* Invisible hit target in SVG space (avoids HTML/SVG coordinate drift). */}
-              <rect
-                data-export-ignore=""
-                x={cx - 14}
-                y={cy - 14}
-                width={28}
-                height={28}
-                className="fill-transparent"
-                onMouseEnter={() => {
-                  setActive({
-                    id: datum.id,
-                    model: modelText,
-                    agent: agentText,
-                    reasoningEffort: datum.reasoningEffort,
-                    accuracy: `${datum.y.toFixed(1)}%`,
-                    accuracyCi:
-                      ciHalf != null ? `± ${ciHalf.toFixed(1)}%` : null,
-                    cost:
-                      datum.cost == null
-                        ? '—'
-                        : PARETO_AXES.cost.format(datum.cost),
-                    tokens:
-                      datum.tokens == null
-                        ? '—'
-                        : PARETO_AXES.tokens.format(datum.tokens),
-                    releaseDate:
-                      datum.releaseDate == null
-                        ? '—'
-                        : PARETO_AXES.release_date.format(datum.releaseDate),
-                    cx,
-                    cy,
-                    onFrontier: datum.onFrontier,
-                  });
-                  setTipOpen(true);
-                }}
-                onMouseLeave={() => setTipOpen(false)}
-              />
-              <rect
-                x={cx - half}
-                y={cy - half}
-                width={size}
-                height={size}
-                fill={datum.onFrontier ? accentColor : undefined}
-                className={
-                  datum.onFrontier
-                    ? undefined
-                    : active?.id === datum.id
-                      ? 'fill-foreground'
-                      : showNonFrontierLabels
-                        ? 'fill-muted-foreground/55'
-                        : 'fill-muted-foreground/35'
-                }
-                style={{ pointerEvents: 'none' }}
-              />
-              {(datum.onFrontier || showNonFrontierLabels) &&
-              datum.showLabel !== false ? (
-                <text
-                  x={labelX}
-                  y={(agentText ? cy - 2 : cy + 4) + (datum.labelOffsetY ?? 0)}
-                  textAnchor={labelOnLeft ? 'end' : 'start'}
-                  dominantBaseline="auto"
+          {data.map((datum) => {
+            const cx = xScale(datum.x);
+            const cy = yScale(datum.y);
+            const half = datum.onFrontier ? FRONTIER_DOT_HALF : DOT_HALF;
+            const size = half * 2;
+            const modelText = datum.label.model;
+            const agentText = datum.label.agent;
+            const placement = labelPlacements.get(datum.id) ?? {
+              side: defaultLabelSide(cx),
+              offsetY: 0,
+              hidden: false,
+            };
+            const labelOnLeft = placement.side === "left";
+            const labelX = labelOnLeft ? cx - half - 6 : cx + half + 6;
+            const ciHalf =
+              datum.accuracyStderr != null && datum.accuracyStderr > 0
+                ? ERROR_BAR_MULTIPLIER * datum.accuracyStderr
+                : null;
+            return (
+              <g key={datum.id}>
+                {/* Invisible hit target in SVG space (avoids HTML/SVG coordinate drift). */}
+                <rect
+                  data-export-ignore=""
+                  x={cx - 14}
+                  y={cy - 14}
+                  width={28}
+                  height={28}
+                  className="fill-transparent"
+                  onMouseEnter={() => {
+                    setActive({
+                      id: datum.id,
+                      model: modelText,
+                      agent: agentText,
+                      reasoningEffort: datum.reasoningEffort,
+                      accuracy: `${datum.y.toFixed(1)}%`,
+                      accuracyCi:
+                        ciHalf != null ? `± ${ciHalf.toFixed(1)}%` : null,
+                      cost:
+                        datum.cost == null
+                          ? "—"
+                          : PARETO_AXES.cost.format(datum.cost),
+                      tokens:
+                        datum.tokens == null
+                          ? "—"
+                          : PARETO_AXES.tokens.format(datum.tokens),
+                      releaseDate:
+                        datum.releaseDate == null
+                          ? "—"
+                          : PARETO_AXES.release_date.format(datum.releaseDate),
+                      cx,
+                      cy,
+                      onFrontier: datum.onFrontier,
+                    });
+                    setTipOpen(true);
+                  }}
+                  onMouseLeave={() => setTipOpen(false)}
+                />
+                <rect
+                  x={cx - half}
+                  y={cy - half}
+                  width={size}
+                  height={size}
+                  fill={datum.onFrontier ? accentColor : undefined}
                   className={
                     datum.onFrontier
-                      ? 'fill-foreground'
-                      : 'fill-muted-foreground'
+                      ? undefined
+                      : active?.id === datum.id
+                        ? "fill-foreground"
+                        : showNonFrontierLabels
+                          ? "fill-muted-foreground/55"
+                          : "fill-muted-foreground/35"
                   }
-                  style={{ pointerEvents: 'none' }}
-                >
-                  <tspan
+                  style={{ pointerEvents: "none" }}
+                />
+                {datum.showLabel !== false && !placement.hidden ? (
+                  <text
+                    // Off-frontier labels stay hidden on screen (hover shows
+                    // them) but are included in image exports.
+                    data-export-only={
+                      !datum.onFrontier && !showNonFrontierLabels
+                        ? ""
+                        : undefined
+                    }
                     x={labelX}
-                    fontSize={12}
-                    fontWeight={datum.onFrontier ? 500 : 400}
+                    y={(agentText ? cy - 2 : cy + 4) + placement.offsetY}
+                    textAnchor={labelOnLeft ? "end" : "start"}
+                    dominantBaseline="auto"
+                    className={cn(
+                      datum.onFrontier
+                        ? "fill-foreground"
+                        : "fill-muted-foreground",
+                      !datum.onFrontier && !showNonFrontierLabels && "hidden",
+                    )}
+                    style={{ pointerEvents: "none" }}
                   >
-                    {modelText}
-                  </tspan>
-                  {agentText ? (
                     <tspan
                       x={labelX}
-                      dy={12}
-                      className={
-                        datum.onFrontier
-                          ? 'fill-muted-foreground'
-                          : 'fill-muted-foreground/70'
-                      }
-                      fontSize={10}
-                      fontWeight={400}
+                      fontSize={12}
+                      fontWeight={datum.onFrontier ? 500 : 400}
                     >
-                      {agentText}
+                      {modelText}
                     </tspan>
-                  ) : null}
-                </text>
-              ) : null}
-            </g>
-          );
-        })}
-      </svg>
-
-      <Tooltip
-        open={tipOpen}
-        onOpenChange={setTipOpen}
-        onOpenChangeComplete={(open) => {
-          // Keep anchor/content until the close animation finishes so it
-          // doesn't jump to the top-left while fading out.
-          if (!open) setActive(null);
-        }}
-      >
-        <TooltipTrigger
-          data-export-ignore=""
-          type="button"
-          tabIndex={-1}
-          delay={0}
-          aria-hidden
-          className="pointer-events-none absolute size-2 -translate-x-1/2 -translate-y-1/2 opacity-0"
-          style={{
-            left: active?.cx ?? 0,
-            top: active?.cy ?? 0,
-          }}
-        />
-        <TooltipContent
-          side="top"
-          sideOffset={10}
-          className={cn(
-            'min-w-40',
-          )}
-          arrowStyle={
-            active?.onFrontier
-              ? {
-                  backgroundColor: accentColor,
-                  fill: accentColor,
-                }
-              : undefined
-          }
-          style={
-            active?.onFrontier
-              ? {
-                  backgroundColor: accentColor,
-                  borderColor: accentColor,
-                  color: 'white',
-                }
-              : undefined
-          }
-        >
-          {active ? (
-            <div className="min-w-0">
-              <div className="flex items-start justify-between gap-6">
-                <div className="min-w-0">
-                  <p className="whitespace-nowrap">
-                    {active.model}
-                    {active.reasoningEffort ? (
-                      <span className="opacity-70">
-                        {' '}({active.reasoningEffort})
-                      </span>
+                    {agentText ? (
+                      <tspan
+                        x={labelX}
+                        dy={12}
+                        className={
+                          datum.onFrontier
+                            ? "fill-muted-foreground"
+                            : "fill-muted-foreground/70"
+                        }
+                        fontSize={10}
+                        fontWeight={400}
+                      >
+                        {agentText}
+                      </tspan>
                     ) : null}
-                  </p>
-                  {active.agent ? (
-                    <p className="opacity-70">{active.agent}</p>
-                  ) : null}
-                </div>
-                <div className="shrink-0 text-right tabular-nums">
-                  <p>{active.accuracy}</p>
-                  {active.accuracyCi ? (
-                    <p className="opacity-70">{active.accuracyCi}</p>
-                  ) : null}
-                </div>
-              </div>
-              <dl className="mt-1.5 grid grid-cols-[auto_auto] gap-x-4 gap-y-0.5 border-t border-current/20 pt-1.5 tabular-nums">
-                <dt className="opacity-70">Cost</dt>
-                <dd className="text-right">{active.cost}</dd>
-                <dt className="opacity-70">Tokens</dt>
-                <dd className="text-right">{active.tokens}</dd>
-                {active.releaseDate !== '—' ? (
-                  <>
-                    <dt className="opacity-70">Released</dt>
-                    <dd className="text-right">{active.releaseDate}</dd>
-                  </>
+                  </text>
                 ) : null}
-              </dl>
-            </div>
-          ) : null}
-        </TooltipContent>
-      </Tooltip>
+              </g>
+            );
+          })}
+        </svg>
+        {xAxisControl ? (
+          <div
+            data-export-ignore
+            className="absolute flex -translate-x-1/2 items-center"
+            style={{ left: MARGIN.left + plotW / 2, top: height - 28 }}
+          >
+            {xAxisControl}
+          </div>
+        ) : null}
+
+        <Tooltip
+          open={tipOpen}
+          onOpenChange={setTipOpen}
+          onOpenChangeComplete={(open) => {
+            // Keep anchor/content until the close animation finishes so it
+            // doesn't jump to the top-left while fading out.
+            if (!open) setActive(null);
+          }}
+        >
+          <TooltipTrigger
+            data-export-ignore=""
+            type="button"
+            tabIndex={-1}
+            delay={0}
+            aria-hidden
+            className="pointer-events-none absolute size-2 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            style={{
+              left: active?.cx ?? 0,
+              top: active?.cy ?? 0,
+            }}
+          />
+          <TooltipContent
+            side="top"
+            sideOffset={10}
+            className={cn("min-w-40")}
+            arrowStyle={
+              active?.onFrontier
+                ? {
+                    backgroundColor: accentColor,
+                    fill: accentColor,
+                  }
+                : undefined
+            }
+            style={
+              active?.onFrontier
+                ? {
+                    backgroundColor: accentColor,
+                    borderColor: accentColor,
+                    color: "white",
+                  }
+                : undefined
+            }
+          >
+            {active ? (
+              <div className="min-w-0">
+                <div className="flex items-start justify-between gap-6">
+                  <div className="min-w-0">
+                    <p className="whitespace-nowrap font-medium">
+                      {active.model}
+                      {active.reasoningEffort ? (
+                        <span className="opacity-70">
+                          {" "}
+                          ({active.reasoningEffort})
+                        </span>
+                      ) : null}
+                    </p>
+                    {active.agent ? (
+                      <p className="text-[0.85em] opacity-70">{active.agent}</p>
+                    ) : null}
+                  </div>
+                  <div className="shrink-0 text-right tabular-nums">
+                    <p>{active.accuracy}</p>
+                    {active.accuracyCi ? (
+                      <p className="opacity-70">{active.accuracyCi}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <dl className="mt-1.5 grid grid-cols-[auto_auto] gap-x-4 gap-y-0.5 border-t border-current/20 pt-1.5 tabular-nums">
+                  <dt className="opacity-70">Cost</dt>
+                  <dd className="text-right">{active.cost}</dd>
+                  <dt className="opacity-70">Tokens</dt>
+                  <dd className="text-right">{active.tokens}</dd>
+                  {active.releaseDate !== "—" ? (
+                    <>
+                      <dt className="opacity-70">Released</dt>
+                      <dd className="text-right">{active.releaseDate}</dd>
+                    </>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
