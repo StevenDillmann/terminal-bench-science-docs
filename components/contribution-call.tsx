@@ -15,6 +15,10 @@ const CONTRIBUTING_URL =
   "https://github.com/harbor-framework/terminal-bench-science/blob/main/CONTRIBUTING.md";
 const PULLS_URL =
   "https://github.com/harbor-framework/terminal-bench-science/pulls";
+const FIX_REQUEST_URL =
+  "https://github.com/harbor-framework/terminal-bench-science/issues/new?template=task-fix.yml";
+const FIX_REQUESTS_URL =
+  "https://github.com/harbor-framework/terminal-bench-science/issues?q=is%3Aissue+is%3Aopen+label%3A%22task+fix%22";
 
 /** Inline: the release this round feeds into, e.g. "0.2". */
 export function CallRelease() {
@@ -122,6 +126,29 @@ export function CurrentCall(): ReactNode {
           href={PULLS_URL}
         />
       </div>
+      <p className="border-t pt-4 text-xs text-muted-foreground">
+        Found a problem with a task in Terminal-Bench-Science{" "}
+        {CONTRIBUTION_CALL.previousRelease}?{" "}
+        <a
+          href={FIX_REQUEST_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground underline decoration-muted-foreground/60 underline-offset-2 hover:decoration-foreground"
+        >
+          Submit a task fix request
+        </a>
+        {" "}
+        and it reaches that task&apos;s author and reviewers, or see the{" "}
+        <a
+          href={FIX_REQUESTS_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground underline decoration-muted-foreground/60 underline-offset-2 hover:decoration-foreground"
+        >
+          open fix requests
+        </a>
+        .
+      </p>
     </aside>
   );
 }
