@@ -1,4 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import { Mail } from 'lucide-react';
 import { SiteLogo } from '@/components/site-logo';
 import { appName, gitConfig } from './shared';
 
@@ -33,6 +34,14 @@ export function baseOptions(): BaseLayoutProps {
       {
         text: 'CONTRIBUTORS',
         url: '/contributors',
+      },
+      {
+        type: 'icon',
+        label: 'Contact',
+        text: 'Contact',
+        icon: <Mail />,
+        url: 'mailto:stevendi@stanford.edu',
+        external: false,
       },
     ],
     githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,

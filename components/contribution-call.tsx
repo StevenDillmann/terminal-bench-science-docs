@@ -147,6 +147,13 @@ export function CurrentCall(): ReactNode {
         >
           open fix requests
         </a>
+        . Questions? Email Steven Dillmann at{" "}
+        <a
+          href="mailto:stevendi@stanford.edu"
+          className="text-foreground underline decoration-muted-foreground/60 underline-offset-2 hover:decoration-foreground"
+        >
+          stevendi@stanford.edu
+        </a>
         .
       </p>
     </aside>
