@@ -506,6 +506,11 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://scholar.google.com/citations?user=o-5vyEsAAAAJ',
       },
       {
+        name: 'Adam Klivans',
+        affiliation: 'The University of Texas at Austin',
+        href: 'https://scholar.google.com/citations?user=UD87zMYAAAAJ&hl=en',
+      },
+      {
         name: 'Thomas Wolf',
         affiliation: 'Hugging Face',
         href: 'https://scholar.google.com/citations?user=D2H5EFEAAAAJ',
