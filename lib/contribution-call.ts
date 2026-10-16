@@ -4,11 +4,11 @@
  */
 export const CONTRIBUTION_CALL = {
   /** Release the round feeds into. */
-  release: "0.2",
+  release: "1.0",
   /** Latest shipped release, for recaps. */
   previousRelease: "0.1",
   /** Pull request deadline, ISO date. */
-  deadline: "2026-10-05",
+  deadline: "2026-12-15",
   /** Frontier systems tasks are calibrated against. */
   calibrationModels: ["Claude Fable 5.1", "GPT-6 Astra"],
 } as const;
