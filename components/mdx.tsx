@@ -22,6 +22,8 @@ import {
   CallRelease,
   CurrentCall,
   PreviousRelease,
+  Roadmap,
+  RoadmapTimeline,
 } from "@/components/contribution-call";
 import { CallLinks } from "@/components/call-links";
 import { DomainTags } from "@/components/domain-tags";
@@ -70,6 +72,8 @@ export function getMDXComponents(components?: MDXComponents) {
     CurrentCall,
     CallRelease,
     CallDeadline,
+    Roadmap,
+    RoadmapTimeline,
     CalibrationModels,
     PreviousRelease,
     ...components,

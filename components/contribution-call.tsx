@@ -4,9 +4,14 @@ import type { ReactNode } from "react";
 import { CallLinks } from "@/components/call-links";
 import {
   CONTRIBUTION_CALL,
+  ROADMAP,
+  ROADMAP_NEXT,
+  ROADMAP_STATUS_LABEL,
   formatCalibrationModels,
   formatCallDeadline,
   formatCallDeadlineShort,
+  formatShortDate,
+  type RoadmapStatus,
 } from "@/lib/contribution-call";
 
 const FORM_URL =
@@ -37,7 +42,7 @@ export function CallDeadline() {
   );
 }
 
-/** Inline: the calibration systems as prose, e.g. "Claude Fable 5.1 and GPT-6 Astra". */
+/** Inline: the calibration systems as prose, e.g. "Claude Opus 5.5 and GPT-6 Astra". */
 export function CalibrationModels() {
   return <>{formatCalibrationModels()}</>;
 }
@@ -79,6 +84,150 @@ function Arrow() {
     >
       →
     </span>
+  );
+}
+
+/**
+ * Every release on one line: shipped ones muted, the closed round marked, the
+ * open round in the accent colour. Wraps to a column on narrow screens.
+ */
+export function Roadmap(): ReactNode {
+  return (
+    <ol
+      aria-label="Release dates"
+      className="not-prose flex flex-col gap-2 font-[family-name:var(--font-google-sans-code)] text-xs tracking-[0.04em] uppercase sm:flex-row sm:items-center sm:gap-3"
+    >
+      {ROADMAP.map((r, i) => (
+        <li key={r.release} className="flex items-center gap-3">
+          {i > 0 && (
+            <span aria-hidden className="hidden text-muted-foreground sm:inline">
+              →
+            </span>
+          )}
+          <span
+            className={
+              r.status === "open"
+                ? "flex items-baseline gap-2 text-[#038f99]"
+                : "flex items-baseline gap-2 text-muted-foreground"
+            }
+          >
+            <span
+              className={
+                r.status === "open" ? "font-medium" : "font-medium text-foreground"
+              }
+            >
+              {r.release}
+            </span>
+            <span>
+              {ROADMAP_STATUS_LABEL[r.status]}{" "}
+              <time dateTime={r.date}>{formatShortDate(r.date)}</time>
+            </span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** What the date in a timeline entry's heading means. */
+const TIMELINE_LABEL: Record<RoadmapStatus, string> = {
+  released: "Released",
+  closed: "Submissions closed",
+  open: "Open · Deadline",
+};
+
+/** Timeline marker: filled when shipped, ringed in the accent colour when open. */
+const TIMELINE_DOT: Record<RoadmapStatus | "next", string> = {
+  released: "border-foreground bg-foreground",
+  closed: "border-muted-foreground bg-muted-foreground",
+  open: "border-[#038f99] bg-background ring-4 ring-[#038f99]/20",
+  next: "border-dashed border-muted-foreground bg-background",
+};
+
+function TimelineItem({
+  dot,
+  last = false,
+  heading,
+  children,
+}: {
+  dot: RoadmapStatus | "next";
+  last?: boolean;
+  heading: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <li className="relative pb-6 pl-8 last:pb-0">
+      {!last && (
+        <span
+          aria-hidden
+          className="absolute top-4 bottom-0 left-[5px] w-px bg-border"
+        />
+      )}
+      <span
+        aria-hidden
+        className={`absolute top-1 left-0 size-3 rounded-full border-2 ${TIMELINE_DOT[dot]}`}
+      />
+      <div className="flex flex-col gap-1">
+        <span className="font-[family-name:var(--font-google-sans-code)] text-sm tracking-[0.04em] uppercase">
+          {heading}
+        </span>
+        <div className="text-sm text-muted-foreground">{children}</div>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The Contribute page's Roadmap section: every release with its status, date,
+ * calibration systems and contents, then what comes after the open round.
+ */
+export function RoadmapTimeline(): ReactNode {
+  return (
+    <ol aria-label="Release roadmap" className="not-prose my-6">
+      {ROADMAP.map((r) => (
+        <TimelineItem
+          key={r.release}
+          dot={r.status}
+          heading={
+            <span
+              className={`flex flex-wrap items-baseline gap-x-3 ${r.status === "open" ? "text-[#038f99]" : ""}`}
+            >
+              <span className="font-medium">
+                Terminal-Bench-Science {r.release}
+              </span>
+              <span
+                className={
+                  r.status === "open" ? "text-xs" : "text-xs text-muted-foreground"
+                }
+              >
+                {TIMELINE_LABEL[r.status]}{" "}
+                <time dateTime={r.date}>{formatShortDate(r.date)}</time>
+              </span>
+            </span>
+          }
+        >
+          <p>
+            {r.summary} Calibrated against{" "}
+            {formatCalibrationModels(r.calibrationModels)}.
+            {r.announcement && (
+              <>
+                {" "}
+                <a
+                  href={r.announcement}
+                  className="text-foreground underline decoration-muted-foreground/60 underline-offset-2 hover:decoration-foreground"
+                >
+                  Read the announcement
+                </a>
+                .
+              </>
+            )}
+          </p>
+        </TimelineItem>
+      ))}
+      <TimelineItem dot="next" last heading={<span className="font-medium">Next</span>}>
+        <p>{ROADMAP_NEXT}</p>
+      </TimelineItem>
+    </ol>
   );
 }
 
@@ -125,6 +274,9 @@ export function CurrentCall(): ReactNode {
           detail="Review & Iterate"
           href={PULLS_URL}
         />
+      </div>
+      <div className="border-t pt-4">
+        <Roadmap />
       </div>
       <p className="border-t pt-4 text-xs text-muted-foreground">
         Found a problem with a task in Terminal-Bench-Science{" "}
