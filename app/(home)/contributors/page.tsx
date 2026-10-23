@@ -23,8 +23,10 @@ const researchPartners = [
 
 const industrySponsors = [
   ['Anthropic', 'https://www.anthropic.com/'],
+  ['Artificial Analysis', 'https://artificialanalysis.ai/'],
   ['Bespoke Labs', 'https://bespokelabs.ai/'],
   ['Google', 'https://www.google.com/'],
+  ['Hugging Face', 'https://huggingface.co/'],
   ['Modal', 'https://modal.com/'],
   ['Moonshot AI', 'https://www.moonshot.ai/'],
   ['Snorkel AI', 'https://snorkel.ai/'],
