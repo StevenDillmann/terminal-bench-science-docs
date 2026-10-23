@@ -21,10 +21,17 @@ export const metadata: Metadata = {
   title: appName,
   metadataBase: new URL(siteUrl),
   description: siteDescription,
+  // SVG for browsers; PNG/ICO for crawlers that don't take SVG (Google's
+  // favicon crawler had none on file for the site); a PNG apple-touch-icon,
+  // since iOS ignores an SVG one. All rendered from favicon.svg.
   icons: {
-    icon: [{ url: '/favicon.svg?v=7', type: 'image/svg+xml' }],
-    shortcut: '/favicon.svg?v=7',
-    apple: '/favicon.svg?v=7',
+    icon: [
+      { url: '/favicon.svg?v=7', type: 'image/svg+xml' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '48x48' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     title: appName,
