@@ -43,7 +43,7 @@ export const ROADMAP: readonly RoadmapEntry[] = [
   {
     release: "1.0",
     status: "open",
-    date: "2026-12-15",
+    date: "2026-11-30",
     calibrationModels: ["Claude Opus 5.5", "GPT-6 Astra"],
     summary:
       "Open for new tasks now. Propose a workflow, build it as a pull request, and iterate with reviewers before the deadline.",
