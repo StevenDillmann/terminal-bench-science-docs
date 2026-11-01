@@ -42,8 +42,16 @@ export const ROADMAP: readonly RoadmapEntry[] = [
   },
   {
     release: "1.0",
+    status: "closed",
+    date: "2026-10-31",
+    calibrationModels: ["Claude Opus 5.5", "GPT-6 Astra"],
+    summary:
+      "Submissions are closed and the release is in preparation, expected in the coming weeks.",
+  },
+  {
+    release: "2.0",
     status: "open",
-    date: "2026-11-30",
+    date: "2026-12-15",
     calibrationModels: ["Claude Opus 5.5", "GPT-6 Astra"],
     summary:
       "Open for new tasks now. Propose a workflow, build it as a pull request, and iterate with reviewers before the deadline.",
@@ -52,7 +60,7 @@ export const ROADMAP: readonly RoadmapEntry[] = [
 
 /** What follows the listed releases, closing the roadmap timeline. */
 export const ROADMAP_NEXT =
-  "Regular releases continue after 1.0, adding new tasks and keeping the leaderboard current.";
+  "Regular releases continue after 2.0, adding new tasks and keeping the leaderboard current.";
 
 const openRound = ROADMAP.find((r) => r.status === "open")!;
 const lastReleased = [...ROADMAP].reverse().find((r) => r.status === "released")!;

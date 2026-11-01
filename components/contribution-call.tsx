@@ -95,7 +95,7 @@ export function Roadmap(): ReactNode {
   return (
     <ol
       aria-label="Release dates"
-      className="not-prose flex flex-col gap-2 font-[family-name:var(--font-google-sans-code)] text-xs tracking-[0.04em] uppercase sm:flex-row sm:items-center sm:gap-3"
+      className="not-prose flex flex-col gap-2 font-[family-name:var(--font-google-sans-code)] text-xs tracking-[0.04em] uppercase sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1"
     >
       {ROADMAP.map((r, i) => (
         <li key={r.release} className="flex items-center gap-3">
@@ -107,8 +107,8 @@ export function Roadmap(): ReactNode {
           <span
             className={
               r.status === "open"
-                ? "flex items-baseline gap-2 text-[#038f99]"
-                : "flex items-baseline gap-2 text-muted-foreground"
+                ? "flex items-baseline gap-2 whitespace-nowrap text-[#038f99]"
+                : "flex items-baseline gap-2 whitespace-nowrap text-muted-foreground"
             }
           >
             <span
