@@ -541,6 +541,11 @@ export const CONTRIBUTOR_GROUPS: ContributorGroup[] = [
         href: 'https://scholar.google.com/citations?user=dMvCg-UAAAAJ',
       },
       {
+        name: 'Kevin Maik Jablonka',
+        affiliation: 'University of Jena',
+        href: 'https://scholar.google.com/citations?user=R2ntI8IAAAAJ',
+      },
+      {
         name: 'J. Nathan Kutz',
         affiliation: 'University of Washington, Autodesk Research',
         href: 'https://scholar.google.com/citations?user=kfT42KEAAAAJ',
